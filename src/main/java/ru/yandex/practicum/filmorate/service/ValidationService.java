@@ -16,45 +16,45 @@ public class ValidationService {
 
     public void validateFilm(Film film) {
         log.debug("Валидация фильма: {}", film.getName());
-        
+
         if (film.getName() == null || film.getName().isBlank()) {
             throw new ValidationException("Название не может быть пустым");
         }
-        
+
         if (film.getDescription() != null && film.getDescription().length() > 200) {
             throw new ValidationException("Максимальная длина описания — 200 символов");
         }
-        
+
         if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(FIRST_FILM_DATE)) {
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
-        
+
         if (film.getDuration() <= 0) {
             throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
-        
+
         log.debug("Валидация фильма прошла успешно");
     }
 
     public void validateUser(User user) {
         log.debug("Валидация пользователя: {}", user.getLogin());
-        
+
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
         }
-        
+
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             throw new ValidationException("Логин не может быть пустым и содержать пробелы");
         }
-        
+
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        
+
         if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
-        
+
         log.debug("Валидация пользователя прошла успешно");
     }
 }

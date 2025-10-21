@@ -21,7 +21,7 @@ public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private final Map<Integer, Film> films = new HashMap<>();
     private int nextId = 1;
-    
+
     @Autowired
     private ValidationService validationService;
 

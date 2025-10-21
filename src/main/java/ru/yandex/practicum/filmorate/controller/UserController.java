@@ -21,7 +21,7 @@ public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final Map<Integer, User> users = new HashMap<>();
     private int nextId = 1;
-    
+
     @Autowired
     private ValidationService validationService;
 
