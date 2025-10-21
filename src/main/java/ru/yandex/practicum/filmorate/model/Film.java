@@ -10,9 +10,6 @@ import ru.yandex.practicum.filmorate.validation.MinReleaseDate;
 
 import java.time.LocalDate;
 
-/**
- * Film.
- */
 @Getter
 @Setter
 public class Film {

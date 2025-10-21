@@ -6,9 +6,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-/**
- * User.
- */
 @Getter
 @Setter
 public class User {
@@ -22,7 +19,6 @@ public class User {
     @Pattern(regexp = "\\S+", message = "Логин не может содержать пробелы")
     private String login;
 
-    @NotBlank(message = "Имя не должно быть пустым")
     private String name;
 
     @NotNull(message = "Дата рождения не может быть пустой")
