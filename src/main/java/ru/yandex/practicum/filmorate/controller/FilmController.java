@@ -8,32 +8,36 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ValidationService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
-    private final Map<Integer, Film> films = new HashMap<>();
-    private int nextId = 1;
+    private final FilmStorage filmStorage;
+
+    private final FilmService filmService;
+    private final ValidationService validationService;
 
     @Autowired
-    private ValidationService validationService;
+    public FilmController(ValidationService validationService, FilmStorage filmStorage, FilmService filmService) {
+        this.validationService = validationService;
+        this.filmStorage = filmStorage;
+        this.filmService = filmService;
+    }
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Получен запрос на создание фильма: {}", film.getName());
         try {
             validationService.validateFilm(film);
-            film.setId(nextId++);
-            films.put(film.getId(), film);
-            log.info("Фильм успешно создан с ID: {}", film.getId());
-            return film;
+            Film createdFilm = filmStorage.add(film);
+            log.info("Фильм успешно создан с ID: {}", createdFilm.getId());
+            return createdFilm;
         } catch (ValidationException e) {
             log.error("Ошибка валидации при создании фильма: {}", e.getMessage());
             throw e;
@@ -45,12 +49,9 @@ public class FilmController {
         log.info("Получен запрос на обновление фильма с ID: {}", film.getId());
         try {
             validationService.validateFilm(film);
-            if (film.getId() <= 0 || !films.containsKey(film.getId())) {
-                throw new NotFoundException("Фильм с ID " + film.getId() + " не найден");
-            }
-            films.put(film.getId(), film);
-            log.info("Фильм с ID {} успешно обновлен", film.getId());
-            return film;
+            Film updatedFilm = filmStorage.update(film);
+            log.info("Фильм с ID {} успешно обновлен", updatedFilm.getId());
+            return updatedFilm;
         } catch (ValidationException e) {
             log.error("Ошибка валидации при обновлении фильма с ID {}: {}", film.getId(), e.getMessage());
             throw e;
@@ -60,9 +61,34 @@ public class FilmController {
         }
     }
 
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable int id) {
+        log.info("Получен запрос на получение фильма с ID: {}", id);
+        return filmStorage.findById(id);
+    }
+
     @GetMapping
     public List<Film> getAllFilms() {
+        List<Film> films = filmStorage.findAll();
         log.info("Получен запрос на получение всех фильмов. Количество фильмов: {}", films.size());
-        return new ArrayList<>(films.values());
+        return films;
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable int id, @PathVariable int userId) {
+        log.info("Получен запрос на добавление лайка фильму {} от пользователя {}", id, userId);
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void removeLike(@PathVariable int id, @PathVariable int userId) {
+        log.info("Получен запрос на удаление лайка у фильма {} от пользователя {}", id, userId);
+        filmService.removeLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+        log.info("Получен запрос на получение топ-{} популярных фильмов", count);
+        return filmService.getMostPopularFilms(count);
     }
 }
