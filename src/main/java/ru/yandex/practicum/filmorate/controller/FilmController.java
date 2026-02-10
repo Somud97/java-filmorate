@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -16,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/films")
+@Validated
 public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private final FilmStorage filmStorage;
@@ -62,7 +65,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable int id) {
+    public Film getFilmById(@PathVariable @Positive int id) {
         log.info("Получен запрос на получение фильма с ID: {}", id);
         return filmStorage.findById(id);
     }
@@ -75,19 +78,19 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable int id, @PathVariable int userId) {
+    public void addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
         log.info("Получен запрос на добавление лайка фильму {} от пользователя {}", id, userId);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable int id, @PathVariable int userId) {
+    public void removeLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
         log.info("Получен запрос на удаление лайка у фильма {} от пользователя {}", id, userId);
         filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
         log.info("Получен запрос на получение топ-{} популярных фильмов", count);
         return filmService.getMostPopularFilms(count);
     }
