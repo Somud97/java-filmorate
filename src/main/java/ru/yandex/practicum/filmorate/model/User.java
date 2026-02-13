@@ -28,9 +28,9 @@ public class User {
     private LocalDate birthday;
 
     /**
-     * Список друзей пользователя.
-     * Хранит уникальные идентификаторы пользователей-друзей.
+     * Связи «дружба» с другими пользователями.
+     * Неподтверждённая — запрос отправлен, подтверждённая — второй пользователь согласился.
      */
-    private Set<Integer> friends = new HashSet<>();
+    private Set<FriendLink> friendLinks = new HashSet<>();
 }
 
