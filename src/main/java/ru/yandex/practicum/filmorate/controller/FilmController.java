@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -13,6 +14,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpaa.MpaaStorage;
 
 import java.util.List;
 
@@ -22,14 +25,21 @@ import java.util.List;
 public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private final FilmStorage filmStorage;
-
+    private final GenreStorage genreStorage;
+    private final MpaaStorage mpaaStorage;
     private final FilmService filmService;
     private final ValidationService validationService;
 
     @Autowired
-    public FilmController(ValidationService validationService, FilmStorage filmStorage, FilmService filmService) {
+    public FilmController(ValidationService validationService,
+                         @Qualifier("filmDbStorage") FilmStorage filmStorage,
+                         GenreStorage genreStorage,
+                         MpaaStorage mpaaStorage,
+                         FilmService filmService) {
         this.validationService = validationService;
         this.filmStorage = filmStorage;
+        this.genreStorage = genreStorage;
+        this.mpaaStorage = mpaaStorage;
         this.filmService = filmService;
     }
 
@@ -38,6 +48,7 @@ public class FilmController {
         log.info("Получен запрос на создание фильма: {}", film.getName());
         try {
             validationService.validateFilm(film);
+            validateMpaAndGenres(film);
             Film createdFilm = filmStorage.add(film);
             log.info("Фильм успешно создан с ID: {}", createdFilm.getId());
             return createdFilm;
@@ -52,6 +63,7 @@ public class FilmController {
         log.info("Получен запрос на обновление фильма с ID: {}", film.getId());
         try {
             validationService.validateFilm(film);
+            validateMpaAndGenres(film);
             Film updatedFilm = filmStorage.update(film);
             log.info("Фильм с ID {} успешно обновлен", updatedFilm.getId());
             return updatedFilm;
@@ -93,5 +105,16 @@ public class FilmController {
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
         log.info("Получен запрос на получение топ-{} популярных фильмов", count);
         return filmService.getMostPopularFilms(count);
+    }
+
+    private void validateMpaAndGenres(Film film) {
+        if (film.getMpaaRatingId() != null) {
+            mpaaStorage.findById(film.getMpaaRatingId());
+        }
+        if (film.getGenreIds() != null) {
+            for (Integer genreId : film.getGenreIds()) {
+                genreStorage.findById(genreId);
+            }
+        }
     }
 }

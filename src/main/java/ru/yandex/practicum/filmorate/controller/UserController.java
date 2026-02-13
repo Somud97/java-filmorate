@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
@@ -27,7 +28,9 @@ public class UserController {
     private final ValidationService validationService;
 
     @Autowired
-    public UserController(ValidationService validationService, UserStorage userStorage, UserService userService) {
+    public UserController(ValidationService validationService,
+                         @Qualifier("userDbStorage") UserStorage userStorage,
+                         UserService userService) {
         this.validationService = validationService;
         this.userStorage = userStorage;
         this.userService = userService;

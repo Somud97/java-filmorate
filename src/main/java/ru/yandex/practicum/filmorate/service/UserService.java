@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.FriendLink;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
@@ -21,7 +22,7 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -45,54 +46,56 @@ public class UserService {
             friend.getFriendLinks().add(new FriendLink(userId, FriendshipStatus.CONFIRMED));
             user.getFriendLinks().removeIf(fl -> fl.getFriendId() == friendId);
             user.getFriendLinks().add(new FriendLink(friendId, FriendshipStatus.CONFIRMED));
+            // Сохраняем изменения в БД
+            userStorage.update(user);
+            userStorage.update(friend);
         } else {
             // userId отправляет запрос friendId — неподтверждённая связь
             user.getFriendLinks().removeIf(fl -> fl.getFriendId() == friendId);
             user.getFriendLinks().add(new FriendLink(friendId, FriendshipStatus.UNCONFIRMED));
+            // Сохраняем изменения в БД
+            userStorage.update(user);
         }
     }
 
     /**
-     * Удаление пользователя из друзей.
-     * Связь удаляется с обеих сторон (независимо от статуса).
+     * Удаление пользователя из друзей (одностороннее: только из списка userId).
      */
     public void removeFriend(int userId, int friendId) {
         log.info("Удаление из друзей: пользователь {} -> {}", userId, friendId);
 
         User user = userStorage.findById(userId);
-        User friend = userStorage.findById(friendId);
+        userStorage.findById(friendId); // проверяем существование
 
         user.getFriendLinks().removeIf(fl -> fl.getFriendId() == friendId);
-        friend.getFriendLinks().removeIf(fl -> fl.getFriendId() == userId);
+        userStorage.update(user);
     }
 
     /**
-     * Получение списка друзей пользователя (только подтверждённые связи).
+     * Получение списка друзей пользователя (все связи: и подтверждённые, и неподтверждённые).
+     * В списке — те, кого пользователь добавил в друзья или кто добавлен им.
      */
     public List<User> getFriends(int userId) {
         return userStorage.findById(userId).getFriendLinks().stream()
-                .filter(fl -> fl.getStatus() == FriendshipStatus.CONFIRMED)
                 .map(fl -> userStorage.findById(fl.getFriendId()))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Получение списка общих друзей двух пользователей (только подтверждённые связи).
+     * Получение списка общих друзей двух пользователей (пересечение списков друзей обоих).
      */
     public List<User> getCommonFriends(int userId, int otherUserId) {
         log.info("Получение общих друзей пользователей {} и {}", userId, otherUserId);
 
-        Set<Integer> userConfirmedIds = userStorage.findById(userId).getFriendLinks().stream()
-                .filter(fl -> fl.getStatus() == FriendshipStatus.CONFIRMED)
+        Set<Integer> userFriendIds = userStorage.findById(userId).getFriendLinks().stream()
                 .map(FriendLink::getFriendId)
                 .collect(Collectors.toSet());
-        Set<Integer> otherConfirmedIds = userStorage.findById(otherUserId).getFriendLinks().stream()
-                .filter(fl -> fl.getStatus() == FriendshipStatus.CONFIRMED)
+        Set<Integer> otherFriendIds = userStorage.findById(otherUserId).getFriendLinks().stream()
                 .map(FriendLink::getFriendId)
                 .collect(Collectors.toSet());
 
-        return userConfirmedIds.stream()
-                .filter(otherConfirmedIds::contains)
+        return userFriendIds.stream()
+                .filter(otherFriendIds::contains)
                 .map(userStorage::findById)
                 .collect(Collectors.toList());
     }
