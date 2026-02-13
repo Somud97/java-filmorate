@@ -1,0 +1,62 @@
+Project Filmorate {
+  database_type: 'PostgreSQL'
+}
+
+// Справочник рейтингов MPA (возрастные ограничения)
+Table mpaa_ratings {
+  id int [pk, increment]
+  code varchar(10) [not null, unique, note: 'G, PG, PG-13, R, NC-17']
+}
+
+// Пользователи
+Table users {
+  id int [pk, increment]
+  email varchar(255) [not null, unique]
+  login varchar(255) [not null, unique]
+  name varchar(255)
+  birthday date [not null]
+}
+
+// Фильмы
+Table films {
+  id int [pk, increment]
+  name varchar(255) [not null]
+  description varchar(200)
+  release_date date [not null]
+  duration int [not null, note: 'минуты']
+  mpaa_rating_id int [ref: > mpaa_ratings.id, note: 'рейтинг MPA, может быть NULL']
+}
+
+// Справочник жанров
+Table genres {
+  id int [pk, increment]
+  name varchar(100) [not null, unique, note: 'Комедия, Драма, Мультфильм, ...']
+}
+
+// Связь фильм — жанр (многие ко многим, один столбец — одно значение)
+Table film_genre {
+  film_id int [ref: > films.id]
+  genre_id int [ref: > genres.id]
+  indexes {
+    (film_id, genre_id) [pk]
+  }
+}
+
+// Дружба: направленная связь с статусом (неподтверждённая / подтверждённая)
+Table user_friends {
+  user_id int [ref: > users.id]
+  friend_id int [ref: > users.id]
+  status varchar(20) [not null, note: 'UNCONFIRMED | CONFIRMED']
+  indexes {
+    (user_id, friend_id) [pk]
+  }
+}
+
+// Лайки фильмов пользователями
+Table film_likes {
+  film_id int [ref: > films.id]
+  user_id int [ref: > users.id]
+  indexes {
+    (film_id, user_id) [pk]
+  }
+}
