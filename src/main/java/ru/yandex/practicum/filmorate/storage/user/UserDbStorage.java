@@ -13,8 +13,11 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -110,10 +113,24 @@ public class UserDbStorage implements UserStorage {
     public List<User> findAll() {
         String sql = "SELECT id, email, login, name, birthday FROM users";
         List<User> users = jdbcTemplate.query(sql, userRowMapper);
+        Map<Integer, Set<FriendLink>> linksByUser = loadAllFriendLinks();
         for (User user : users) {
-            user.setFriendLinks(loadFriendLinks(user.getId()));
+            user.setFriendLinks(linksByUser.getOrDefault(user.getId(), new HashSet<>()));
         }
         return users;
+    }
+
+    private Map<Integer, Set<FriendLink>> loadAllFriendLinks() {
+        String sql = "SELECT user_id, friend_id, status FROM user_friends";
+        Map<Integer, Set<FriendLink>> result = new HashMap<>();
+        jdbcTemplate.query(sql, (rs, rowNum) -> {
+            int userId = rs.getInt("user_id");
+            int friendId = rs.getInt("friend_id");
+            FriendshipStatus status = FriendshipStatus.valueOf(rs.getString("status"));
+            result.computeIfAbsent(userId, k -> new HashSet<>()).add(new FriendLink(friendId, status));
+            return null;
+        });
+        return result;
     }
 
     private Set<FriendLink> loadFriendLinks(int userId) {
@@ -134,12 +151,11 @@ public class UserDbStorage implements UserStorage {
             return;
         }
         String sql = "INSERT INTO user_friends (user_id, friend_id, status) VALUES (?, ?, ?)";
+        List<Object[]> batchArgs = new ArrayList<>(friendLinks.size());
         for (FriendLink link : friendLinks) {
-            jdbcTemplate.update(sql,
-                userId,
-                link.getFriendId(),
-                link.getStatus().name());
+            batchArgs.add(new Object[]{userId, link.getFriendId(), link.getStatus().name()});
         }
+        jdbcTemplate.batchUpdate(sql, batchArgs);
     }
 
     private void deleteFriendLinks(int userId) {

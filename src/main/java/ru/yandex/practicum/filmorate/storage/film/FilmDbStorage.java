@@ -14,8 +14,11 @@ import ru.yandex.practicum.filmorate.model.dto.GenreDto;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -197,12 +200,17 @@ public class FilmDbStorage implements FilmStorage {
         if (genres == null || genres.isEmpty()) {
             return;
         }
-        String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+        Map<String, Integer> nameToId = getGenreNameToIdMap();
+        List<Object[]> batchArgs = new ArrayList<>();
         for (Genre genre : genres) {
-            Integer genreId = getGenreId(genre);
+            Integer genreId = nameToId.get(genre.getName());
             if (genreId != null) {
-                jdbcTemplate.update(sql, filmId, genreId);
+                batchArgs.add(new Object[]{filmId, genreId});
             }
+        }
+        if (!batchArgs.isEmpty()) {
+            String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+            jdbcTemplate.batchUpdate(sql, batchArgs);
         }
     }
 
@@ -210,12 +218,16 @@ public class FilmDbStorage implements FilmStorage {
         if (genreIds == null || genreIds.isEmpty()) {
             return;
         }
-        String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
         Set<Integer> uniqueIds = new HashSet<>(genreIds);
+        List<Object[]> batchArgs = new ArrayList<>();
         for (Integer genreId : uniqueIds) {
             if (genreId != null && genreId > 0) {
-                jdbcTemplate.update(sql, filmId, genreId);
+                batchArgs.add(new Object[]{filmId, genreId});
             }
+        }
+        if (!batchArgs.isEmpty()) {
+            String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+            jdbcTemplate.batchUpdate(sql, batchArgs);
         }
     }
 
@@ -224,9 +236,21 @@ public class FilmDbStorage implements FilmStorage {
             return;
         }
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
+        List<Object[]> batchArgs = new ArrayList<>(likes.size());
         for (Integer userId : likes) {
-            jdbcTemplate.update(sql, filmId, userId);
+            batchArgs.add(new Object[]{filmId, userId});
         }
+        jdbcTemplate.batchUpdate(sql, batchArgs);
+    }
+
+    private Map<String, Integer> getGenreNameToIdMap() {
+        String sql = "SELECT id, name FROM genres";
+        Map<String, Integer> map = new HashMap<>();
+        jdbcTemplate.query(sql, (rs, rowNum) -> {
+            map.put(rs.getString("name"), rs.getInt("id"));
+            return null;
+        });
+        return map;
     }
 
     private void deleteGenres(int filmId) {
