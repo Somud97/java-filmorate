@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,27 @@ public class FilmDbStorage implements FilmStorage {
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
+    private final RowMapper<Film> filmRowMapper = (rs, rowNum) -> {
+        Film film = new Film();
+        film.setId(rs.getInt("id"));
+        film.setName(rs.getString("name"));
+        film.setDescription(rs.getString("description"));
+        Date releaseDate = rs.getDate("release_date");
+        if (releaseDate != null) {
+            film.setReleaseDate(releaseDate.toLocalDate());
+        }
+        film.setDuration(rs.getInt("duration"));
+        Object mpaaRatingIdObj = rs.getObject("mpaa_rating_id");
+        if (mpaaRatingIdObj != null) {
+            film.setMpaaRatingId(rs.getInt("mpaa_rating_id"));
+        }
+        String mpaaCode = rs.getString("mpaa_code");
+        if (mpaaCode != null) {
+            film.setMpaaRating(parseMpaaRating(mpaaCode));
+        }
+        return film;
+    };
 
     @Override
     public Film add(Film film) {
@@ -108,26 +130,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpaa_rating_id, " +
             "mr.code AS mpaa_code FROM films f " +
             "LEFT JOIN mpaa_ratings mr ON f.mpaa_rating_id = mr.id WHERE f.id = ?";
-        List<Film> films = jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Film film = new Film();
-            film.setId(rs.getInt("id"));
-            film.setName(rs.getString("name"));
-            film.setDescription(rs.getString("description"));
-            Date releaseDate = rs.getDate("release_date");
-            if (releaseDate != null) {
-                film.setReleaseDate(releaseDate.toLocalDate());
-            }
-            film.setDuration(rs.getInt("duration"));
-            Object mpaaRatingIdObj = rs.getObject("mpaa_rating_id");
-            if (mpaaRatingIdObj != null) {
-                film.setMpaaRatingId(rs.getInt("mpaa_rating_id"));
-            }
-            String mpaaCode = rs.getString("mpaa_code");
-            if (mpaaCode != null) {
-                film.setMpaaRating(parseMpaaRating(mpaaCode));
-            }
-            return film;
-        }, id);
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, id);
         if (films.isEmpty()) {
             throw new NotFoundException("Фильм с ID " + id + " не найден");
         }
@@ -146,26 +149,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpaa_rating_id, " +
             "mr.code AS mpaa_code FROM films f " +
             "LEFT JOIN mpaa_ratings mr ON f.mpaa_rating_id = mr.id";
-        List<Film> films = jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Film film = new Film();
-            film.setId(rs.getInt("id"));
-            film.setName(rs.getString("name"));
-            film.setDescription(rs.getString("description"));
-            Date releaseDate = rs.getDate("release_date");
-            if (releaseDate != null) {
-                film.setReleaseDate(releaseDate.toLocalDate());
-            }
-            film.setDuration(rs.getInt("duration"));
-            Object mpaaRatingIdObj = rs.getObject("mpaa_rating_id");
-            if (mpaaRatingIdObj != null) {
-                film.setMpaaRatingId(rs.getInt("mpaa_rating_id"));
-            }
-            String mpaaCode = rs.getString("mpaa_code");
-            if (mpaaCode != null) {
-                film.setMpaaRating(parseMpaaRating(mpaaCode));
-            }
-            return film;
-        });
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
         for (Film film : films) {
             film.setGenres(loadGenres(film.getId()));
             film.setGenreIds(loadGenreIds(film.getId()));
