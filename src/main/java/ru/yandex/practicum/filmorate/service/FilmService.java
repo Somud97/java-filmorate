@@ -30,7 +30,6 @@ public class FilmService {
         log.info("Добавление лайка: фильм {}, пользователь {}", filmId, userId);
 
         Film film = filmStorage.findById(filmId);
-        // Проверяем, что пользователь существует
         userStorage.findById(userId);
 
         film.getLikes().add(userId);
@@ -41,7 +40,6 @@ public class FilmService {
         log.info("Удаление лайка: фильм {}, пользователь {}", filmId, userId);
 
         Film film = filmStorage.findById(filmId);
-        // Проверяем, что пользователь существует
         userStorage.findById(userId);
 
         film.getLikes().remove(userId);
@@ -56,9 +54,9 @@ public class FilmService {
         }
 
         return filmStorage.findAll().stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+            .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
+            .limit(count)
+            .collect(Collectors.toList());
     }
 }
 

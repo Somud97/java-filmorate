@@ -20,14 +20,14 @@ public class GenreDbStorage implements GenreStorage {
     public List<GenreDto> findAll() {
         String sql = "SELECT id, name FROM genres ORDER BY id";
         return jdbcTemplate.query(sql, (rs, rowNum) ->
-                new GenreDto(rs.getInt("id"), rs.getString("name")));
+            new GenreDto(rs.getInt("id"), rs.getString("name")));
     }
 
     @Override
     public GenreDto findById(int id) {
         String sql = "SELECT id, name FROM genres WHERE id = ?";
         List<GenreDto> list = jdbcTemplate.query(sql, (rs, rowNum) ->
-                new GenreDto(rs.getInt("id"), rs.getString("name")), id);
+            new GenreDto(rs.getInt("id"), rs.getString("name")), id);
         if (list.isEmpty()) {
             throw new NotFoundException("Жанр с ID " + id + " не найден");
         }

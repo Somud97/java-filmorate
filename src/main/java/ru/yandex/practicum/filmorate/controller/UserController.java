@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -22,13 +20,12 @@ import java.util.List;
 public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserStorage userStorage;
-
     private final UserService userService;
     private final ValidationService validationService;
 
     public UserController(ValidationService validationService,
-                         @Qualifier("userDbStorage") UserStorage userStorage,
-                         UserService userService) {
+                          @Qualifier("userDbStorage") UserStorage userStorage,
+                          UserService userService) {
         this.validationService = validationService;
         this.userStorage = userStorage;
         this.userService = userService;
@@ -37,32 +34,19 @@ public class UserController {
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на создание пользователя: {}", user.getLogin());
-        try {
-            validationService.validateUser(user);
-            User createdUser = userStorage.add(user);
-            log.info("Пользователь успешно создан с ID: {}", createdUser.getId());
-            return createdUser;
-        } catch (ValidationException e) {
-            log.error("Ошибка валидации при создании пользователя: {}", e.getMessage());
-            throw e;
-        }
+        validationService.validateUser(user);
+        User createdUser = userStorage.add(user);
+        log.info("Пользователь успешно создан с ID: {}", createdUser.getId());
+        return createdUser;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя с ID: {}", user.getId());
-        try {
-            validationService.validateUser(user);
-            User updatedUser = userStorage.update(user);
-            log.info("Пользователь с ID {} успешно обновлен", updatedUser.getId());
-            return updatedUser;
-        } catch (ValidationException e) {
-            log.error("Ошибка валидации при обновлении пользователя с ID {}: {}", user.getId(), e.getMessage());
-            throw e;
-        } catch (NotFoundException e) {
-            log.error("Пользователь с ID {} не найден: {}", user.getId(), e.getMessage());
-            throw e;
-        }
+        validationService.validateUser(user);
+        User updatedUser = userStorage.update(user);
+        log.info("Пользователь с ID {} успешно обновлен", updatedUser.getId());
+        return updatedUser;
     }
 
     @GetMapping("/{id}")

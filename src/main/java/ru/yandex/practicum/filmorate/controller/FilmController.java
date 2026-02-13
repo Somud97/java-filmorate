@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -30,10 +28,10 @@ public class FilmController {
     private final ValidationService validationService;
 
     public FilmController(ValidationService validationService,
-                         @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                         GenreStorage genreStorage,
-                         MpaaStorage mpaaStorage,
-                         FilmService filmService) {
+                          @Qualifier("filmDbStorage") FilmStorage filmStorage,
+                          GenreStorage genreStorage,
+                          MpaaStorage mpaaStorage,
+                          FilmService filmService) {
         this.validationService = validationService;
         this.filmStorage = filmStorage;
         this.genreStorage = genreStorage;
@@ -44,34 +42,21 @@ public class FilmController {
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Получен запрос на создание фильма: {}", film.getName());
-        try {
-            validationService.validateFilm(film);
-            validateMpaAndGenres(film);
-            Film createdFilm = filmStorage.add(film);
-            log.info("Фильм успешно создан с ID: {}", createdFilm.getId());
-            return createdFilm;
-        } catch (ValidationException e) {
-            log.error("Ошибка валидации при создании фильма: {}", e.getMessage());
-            throw e;
-        }
+        validationService.validateFilm(film);
+        validateMpaAndGenres(film);
+        Film createdFilm = filmStorage.add(film);
+        log.info("Фильм успешно создан с ID: {}", createdFilm.getId());
+        return createdFilm;
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Получен запрос на обновление фильма с ID: {}", film.getId());
-        try {
-            validationService.validateFilm(film);
-            validateMpaAndGenres(film);
-            Film updatedFilm = filmStorage.update(film);
-            log.info("Фильм с ID {} успешно обновлен", updatedFilm.getId());
-            return updatedFilm;
-        } catch (ValidationException e) {
-            log.error("Ошибка валидации при обновлении фильма с ID {}: {}", film.getId(), e.getMessage());
-            throw e;
-        } catch (NotFoundException e) {
-            log.error("Фильм с ID {} не найден: {}", film.getId(), e.getMessage());
-            throw e;
-        }
+        validationService.validateFilm(film);
+        validateMpaAndGenres(film);
+        Film updatedFilm = filmStorage.update(film);
+        log.info("Фильм с ID {} успешно обновлен", updatedFilm.getId());
+        return updatedFilm;
     }
 
     @GetMapping("/{id}")

@@ -17,7 +17,6 @@ public enum MpaaRating {
         return description;
     }
 
-    /** Код рейтинга для API (G, PG, PG-13, R, NC-17). */
     public String getCode() {
         int sep = description.indexOf(" — ");
         return sep >= 0 ? description.substring(0, sep) : description.split(" ")[0];

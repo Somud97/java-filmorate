@@ -60,7 +60,6 @@ public class UserDbStorage implements UserStorage {
         }
         user.setId(id);
 
-        // Сохраняем связи дружбы
         saveFriendLinks(user.getId(), user.getFriendLinks());
 
         return findById(id);
@@ -70,17 +69,16 @@ public class UserDbStorage implements UserStorage {
     public User update(User user) {
         String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday() != null ? Date.valueOf(user.getBirthday()) : null,
-                user.getId());
+            user.getEmail(),
+            user.getLogin(),
+            user.getName(),
+            user.getBirthday() != null ? Date.valueOf(user.getBirthday()) : null,
+            user.getId());
 
         if (rowsAffected == 0) {
             throw new NotFoundException("Пользователь с ID " + user.getId() + " не найден");
         }
 
-        // Обновляем связи дружбы
         deleteFriendLinks(user.getId());
         saveFriendLinks(user.getId(), user.getFriendLinks());
 
@@ -89,7 +87,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void delete(int id) {
-        // Каскадное удаление через ON DELETE CASCADE удалит связанные записи
         String sql = "DELETE FROM users WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         if (rowsAffected == 0) {
@@ -122,13 +119,13 @@ public class UserDbStorage implements UserStorage {
     private Set<FriendLink> loadFriendLinks(int userId) {
         String sql = "SELECT friend_id, status FROM user_friends WHERE user_id = ?";
         List<FriendLink> links = jdbcTemplate.query(sql,
-                (rs, rowNum) -> {
-                    int friendId = rs.getInt("friend_id");
-                    String statusStr = rs.getString("status");
-                    FriendshipStatus status = FriendshipStatus.valueOf(statusStr);
-                    return new FriendLink(friendId, status);
-                },
-                userId);
+            (rs, rowNum) -> {
+                int friendId = rs.getInt("friend_id");
+                String statusStr = rs.getString("status");
+                FriendshipStatus status = FriendshipStatus.valueOf(statusStr);
+                return new FriendLink(friendId, status);
+            },
+            userId);
         return new HashSet<>(links);
     }
 
@@ -139,9 +136,9 @@ public class UserDbStorage implements UserStorage {
         String sql = "INSERT INTO user_friends (user_id, friend_id, status) VALUES (?, ?, ?)";
         for (FriendLink link : friendLinks) {
             jdbcTemplate.update(sql,
-                    userId,
-                    link.getFriendId(),
-                    link.getStatus().name());
+                userId,
+                link.getFriendId(),
+                link.getStatus().name());
         }
     }
 

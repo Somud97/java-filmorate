@@ -55,7 +55,6 @@ public class FilmDbStorage implements FilmStorage {
         }
         film.setId(id);
 
-        // Сохраняем жанры (по id или по enum) и лайки
         if (film.getGenreIds() != null && !film.getGenreIds().isEmpty()) {
             saveGenresByIds(film.getId(), film.getGenreIds());
         } else {
@@ -83,7 +82,6 @@ public class FilmDbStorage implements FilmStorage {
             throw new NotFoundException("Фильм с ID " + film.getId() + " не найден");
         }
 
-        // Обновляем жанры (по id или по enum) и лайки
         deleteGenres(film.getId());
         if (film.getGenreIds() != null && !film.getGenreIds().isEmpty()) {
             saveGenresByIds(film.getId(), film.getGenreIds());
@@ -98,7 +96,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void delete(int id) {
-        // Каскадное удаление через ON DELETE CASCADE удалит связанные записи
         String sql = "DELETE FROM films WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         if (rowsAffected == 0) {
@@ -136,7 +133,6 @@ public class FilmDbStorage implements FilmStorage {
         }
         Film film = films.get(0);
 
-        // Загружаем жанры, genreIds, genresResponse и лайки
         film.setGenres(loadGenres(id));
         film.setGenreIds(loadGenreIds(id));
         film.setGenresResponse(loadGenresDto(id));
@@ -171,7 +167,6 @@ public class FilmDbStorage implements FilmStorage {
             return film;
         });
         for (Film film : films) {
-            // Загружаем жанры, genreIds, genresResponse и лайки
             film.setGenres(loadGenres(film.getId()));
             film.setGenreIds(loadGenreIds(film.getId()));
             film.setGenresResponse(loadGenresDto(film.getId()));
@@ -285,7 +280,6 @@ public class FilmDbStorage implements FilmStorage {
 
     private MpaaRating parseMpaaRating(String code) {
         if (code == null) return null;
-        // Ищем enum по коду через getCode() (G, PG, PG-13, R, NC-17)
         for (MpaaRating rating : MpaaRating.values()) {
             if (rating.getCode().equals(code)) {
                 return rating;

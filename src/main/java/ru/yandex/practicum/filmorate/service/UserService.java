@@ -31,22 +31,18 @@ public class UserService {
         User friend = userStorage.findById(friendId);
 
         boolean friendAlreadyRequested = friend.getFriendLinks().stream()
-                .anyMatch(fl -> fl.getFriendId() == userId && fl.getStatus() == FriendshipStatus.UNCONFIRMED);
+            .anyMatch(fl -> fl.getFriendId() == userId && fl.getStatus() == FriendshipStatus.UNCONFIRMED);
 
         if (friendAlreadyRequested) {
-            // userId принимает запрос от friendId — делаем обе связи подтверждёнными
             friend.getFriendLinks().removeIf(fl -> fl.getFriendId() == userId);
             friend.getFriendLinks().add(new FriendLink(userId, FriendshipStatus.CONFIRMED));
             user.getFriendLinks().removeIf(fl -> fl.getFriendId() == friendId);
             user.getFriendLinks().add(new FriendLink(friendId, FriendshipStatus.CONFIRMED));
-            // Сохраняем изменения в БД
             userStorage.update(user);
             userStorage.update(friend);
         } else {
-            // userId отправляет запрос friendId — неподтверждённая связь
             user.getFriendLinks().removeIf(fl -> fl.getFriendId() == friendId);
             user.getFriendLinks().add(new FriendLink(friendId, FriendshipStatus.UNCONFIRMED));
-            // Сохраняем изменения в БД
             userStorage.update(user);
         }
     }
@@ -55,7 +51,7 @@ public class UserService {
         log.info("Удаление из друзей: пользователь {} -> {}", userId, friendId);
 
         User user = userStorage.findById(userId);
-        userStorage.findById(friendId); // проверяем существование
+        userStorage.findById(friendId);
 
         user.getFriendLinks().removeIf(fl -> fl.getFriendId() == friendId);
         userStorage.update(user);
@@ -63,22 +59,22 @@ public class UserService {
 
     public List<User> getFriends(int userId) {
         return userStorage.findById(userId).getFriendLinks().stream()
-                .map(fl -> userStorage.findById(fl.getFriendId()))
-                .collect(Collectors.toList());
+            .map(fl -> userStorage.findById(fl.getFriendId()))
+            .collect(Collectors.toList());
     }
 
     public List<User> getCommonFriends(int userId, int otherUserId) {
         Set<Integer> userFriendIds = userStorage.findById(userId).getFriendLinks().stream()
-                .map(FriendLink::getFriendId)
-                .collect(Collectors.toSet());
+            .map(FriendLink::getFriendId)
+            .collect(Collectors.toSet());
         Set<Integer> otherFriendIds = userStorage.findById(otherUserId).getFriendLinks().stream()
-                .map(FriendLink::getFriendId)
-                .collect(Collectors.toSet());
+            .map(FriendLink::getFriendId)
+            .collect(Collectors.toSet());
 
         return userFriendIds.stream()
-                .filter(otherFriendIds::contains)
-                .map(userStorage::findById)
-                .collect(Collectors.toList());
+            .filter(otherFriendIds::contains)
+            .map(userStorage::findById)
+            .collect(Collectors.toList());
     }
 }
 
