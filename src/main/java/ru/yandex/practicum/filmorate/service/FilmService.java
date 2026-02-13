@@ -26,10 +26,6 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
-    /**
-     * Добавление лайка фильму от пользователя.
-     * Один пользователь может поставить лайк одному фильму только один раз.
-     */
     public void addLike(int filmId, int userId) {
         log.info("Добавление лайка: фильм {}, пользователь {}", filmId, userId);
 
@@ -41,9 +37,6 @@ public class FilmService {
         filmStorage.update(film);
     }
 
-    /**
-     * Удаление лайка фильма пользователем.
-     */
     public void removeLike(int filmId, int userId) {
         log.info("Удаление лайка: фильм {}, пользователь {}", filmId, userId);
 
@@ -55,9 +48,6 @@ public class FilmService {
         filmStorage.update(film);
     }
 
-    /**
-     * Получение списка самых популярных фильмов по количеству лайков.
-     */
     public List<Film> getMostPopularFilms(int count) {
         log.info("Получение топ-{} самых популярных фильмов", count);
 

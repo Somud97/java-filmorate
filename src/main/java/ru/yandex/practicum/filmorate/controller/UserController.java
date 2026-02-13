@@ -67,15 +67,12 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable @Positive int id) {
-        log.info("Получен запрос на получение пользователя с ID: {}", id);
         return userStorage.findById(id);
     }
 
     @GetMapping
     public List<User> getAllUsers() {
-        List<User> users = userStorage.findAll();
-        log.info("Получен запрос на получение всех пользователей. Количество пользователей: {}", users.size());
-        return users;
+        return userStorage.findAll();
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -92,13 +89,11 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable @Positive int id) {
-        log.info("Получен запрос на список друзей пользователя {}", id);
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable @Positive int id, @PathVariable @Positive int otherId) {
-        log.info("Получен запрос на список общих друзей пользователей {} и {}", id, otherId);
         return userService.getCommonFriends(id, otherId);
     }
 }

@@ -76,15 +76,12 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable @Positive int id) {
-        log.info("Получен запрос на получение фильма с ID: {}", id);
         return filmStorage.findById(id);
     }
 
     @GetMapping
     public List<Film> getAllFilms() {
-        List<Film> films = filmStorage.findAll();
-        log.info("Получен запрос на получение всех фильмов. Количество фильмов: {}", films.size());
-        return films;
+        return filmStorage.findAll();
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -101,7 +98,6 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
-        log.info("Получен запрос на получение топ-{} популярных фильмов", count);
         return filmService.getMostPopularFilms(count);
     }
 

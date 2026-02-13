@@ -24,11 +24,6 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    /**
-     * Добавление в друзья: пользователь userId отправляет запрос friendId или принимает запрос от friendId.
-     * Если friendId уже отправил запрос userId — связь становится подтверждённой.
-     * Иначе создаётся неподтверждённая связь (запрос от userId к friendId).
-     */
     public void addFriend(int userId, int friendId) {
         log.info("Добавление в друзья: пользователь {} -> {}", userId, friendId);
 
@@ -56,9 +51,6 @@ public class UserService {
         }
     }
 
-    /**
-     * Удаление пользователя из друзей (одностороннее: только из списка userId).
-     */
     public void removeFriend(int userId, int friendId) {
         log.info("Удаление из друзей: пользователь {} -> {}", userId, friendId);
 
@@ -69,22 +61,13 @@ public class UserService {
         userStorage.update(user);
     }
 
-    /**
-     * Получение списка друзей пользователя (все связи: и подтверждённые, и неподтверждённые).
-     * В списке — те, кого пользователь добавил в друзья или кто добавлен им.
-     */
     public List<User> getFriends(int userId) {
         return userStorage.findById(userId).getFriendLinks().stream()
                 .map(fl -> userStorage.findById(fl.getFriendId()))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Получение списка общих друзей двух пользователей (пересечение списков друзей обоих).
-     */
     public List<User> getCommonFriends(int userId, int otherUserId) {
-        log.info("Получение общих друзей пользователей {} и {}", userId, otherUserId);
-
         Set<Integer> userFriendIds = userStorage.findById(userId).getFriendLinks().stream()
                 .map(FriendLink::getFriendId)
                 .collect(Collectors.toSet());
