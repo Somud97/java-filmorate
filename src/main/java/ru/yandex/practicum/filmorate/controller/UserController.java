@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +26,6 @@ public class UserController {
     private final UserService userService;
     private final ValidationService validationService;
 
-    @Autowired
     public UserController(ValidationService validationService,
                          @Qualifier("userDbStorage") UserStorage userStorage,
                          UserService userService) {

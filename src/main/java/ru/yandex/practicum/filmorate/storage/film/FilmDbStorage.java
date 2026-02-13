@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -28,19 +27,6 @@ public class FilmDbStorage implements FilmStorage {
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-
-    private final RowMapper<Film> filmRowMapper = (rs, rowNum) -> {
-        Film film = new Film();
-        film.setId(rs.getInt("id"));
-        film.setName(rs.getString("name"));
-        film.setDescription(rs.getString("description"));
-        Date releaseDate = rs.getDate("release_date");
-        if (releaseDate != null) {
-            film.setReleaseDate(releaseDate.toLocalDate());
-        }
-        film.setDuration(rs.getInt("duration"));
-        return film;
-    };
 
     @Override
     public Film add(Film film) {

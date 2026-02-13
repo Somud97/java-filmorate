@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +29,6 @@ public class FilmController {
     private final FilmService filmService;
     private final ValidationService validationService;
 
-    @Autowired
     public FilmController(ValidationService validationService,
                          @Qualifier("filmDbStorage") FilmStorage filmStorage,
                          GenreStorage genreStorage,
