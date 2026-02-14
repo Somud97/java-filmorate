@@ -27,10 +27,6 @@ public class User {
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
-    /**
-     * Связи «дружба» с другими пользователями.
-     * Неподтверждённая — запрос отправлен, подтверждённая — второй пользователь согласился.
-     */
     private Set<FriendLink> friendLinks = new HashSet<>();
 }
 

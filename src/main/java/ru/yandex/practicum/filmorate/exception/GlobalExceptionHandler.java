@@ -43,7 +43,6 @@ public class GlobalExceptionHandler {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
 
-        // Возвращаем приоритетную ошибку валидации
         String message = getPriorityErrorMessage(e);
 
         errorResponse.put("message", message);
@@ -71,12 +70,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
-    /**
-     * Определяет приоритет ошибок валидации
-     * Возвращает наиболее критичную ошибку
-     */
     private String getPriorityErrorMessage(MethodArgumentNotValidException e) {
-        // Приоритет ошибок (от высшего к низшему)
         String[] priorityFields = {"email", "login", "name", "birthday", "name", "description", "releaseDate", "duration"};
 
         for (String field : priorityFields) {
@@ -87,7 +81,6 @@ public class GlobalExceptionHandler {
             }
         }
 
-        // Если не найдена приоритетная ошибка, возвращаем первую
         return e.getBindingResult()
                 .getFieldErrors()
                 .stream()

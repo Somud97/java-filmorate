@@ -16,4 +16,9 @@ public enum MpaaRating {
     public String getDescription() {
         return description;
     }
+
+    public String getCode() {
+        int sep = description.indexOf(" — ");
+        return sep >= 0 ? description.substring(0, sep) : description.split(" ")[0];
+    }
 }
