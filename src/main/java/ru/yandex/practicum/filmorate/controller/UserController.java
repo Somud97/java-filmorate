@@ -80,4 +80,10 @@ public class UserController {
     public List<User> getCommonFriends(@PathVariable @Positive int id, @PathVariable @Positive int otherId) {
         return userService.getCommonFriends(id, otherId);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable Integer id) {
+        log.info("Удаление пользователя с ID: {}", id);
+        userService.deleteById(id);
+    }
 }
