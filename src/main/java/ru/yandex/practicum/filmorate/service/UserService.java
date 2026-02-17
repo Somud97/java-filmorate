@@ -79,6 +79,7 @@ public class UserService {
 
     public String deleteById(Integer id) {
         log.info("Удаление пользователя с ID: {}", id);
-        return userStorage.deleteById(id);}
+        return userStorage.deleteById(id);
+    }
 }
 
