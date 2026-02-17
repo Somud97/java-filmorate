@@ -94,7 +94,7 @@ class UserDbStorageTest {
         User user = userStorage.add(createUser("del@mail.ru", "del", "Del", LocalDate.of(1995, 1, 1)));
         int id = user.getId();
 
-        userStorage.delete(id);
+        userStorage.deleteById(id);
 
         assertThatThrownBy(() -> userStorage.findById(id))
                 .isInstanceOf(NotFoundException.class)
@@ -103,7 +103,7 @@ class UserDbStorageTest {
 
     @Test
     void delete_shouldThrowWhenUserNotFound() {
-        assertThatThrownBy(() -> userStorage.delete(99999))
+        assertThatThrownBy(() -> userStorage.deleteById(99999))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("99999");
     }
