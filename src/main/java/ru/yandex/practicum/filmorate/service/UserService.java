@@ -76,5 +76,9 @@ public class UserService {
             .map(userStorage::findById)
             .collect(Collectors.toList());
     }
+
+    public String deleteById(Integer id) {
+        log.info("Удаление пользователя с ID: {}", id);
+        return userStorage.deleteById(id);}
 }
 

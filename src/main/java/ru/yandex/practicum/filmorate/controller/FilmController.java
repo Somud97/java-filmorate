@@ -96,4 +96,10 @@ public class FilmController {
             }
         }
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable Integer id) {
+        log.info("Удаление фильма с ID: {}", id);
+        filmService.deleteById(id);
+    }
 }

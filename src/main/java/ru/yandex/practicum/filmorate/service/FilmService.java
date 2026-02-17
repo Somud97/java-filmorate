@@ -58,5 +58,9 @@ public class FilmService {
             .limit(count)
             .collect(Collectors.toList());
     }
+
+    public String deleteById(Integer id) {
+        return filmStorage.deleteById(id);
+    }
 }
 
