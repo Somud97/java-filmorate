@@ -27,12 +27,12 @@ public class DirectorService {
     }
 
     public Director updateDirector(Director director) {
-        getById(director.getId()); // Проверка существования
+        getById(director.getId());
         return directorStorage.updateDirector(director);
     }
 
     public void deleteDirector(int id) {
-        getById(id); // Проверка существования
+        getById(id);
         directorStorage.deleteDirector(id);
     }
 }

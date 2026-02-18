@@ -35,24 +35,12 @@ public class FilmService {
         this.likeStorage = likeStorage;
     }
 
-//    public void addLike(int filmId, int userId) {
-//        log.info("Добавление лайка: фильм {}, пользователь {}", filmId, userId);
-//
-//        Film film = filmStorage.findById(filmId);
-//        userStorage.findById(userId);
-//
-//        film.getLikes().add(userId);
-//        filmStorage.update(film);
-//    }
-
     public void addLike(int filmId, int userId) {
         log.info("Добавление лайка: фильм {}, пользователь {}", filmId, userId);
 
-        // Проверяем существование фильма и пользователя
         filmStorage.findById(filmId);
         userStorage.findById(userId);
 
-        // Добавляем лайк через отдельный storage
         likeStorage.addLike(filmId, userId);
 
         log.info("Лайк успешно добавлен");
@@ -61,25 +49,13 @@ public class FilmService {
     public void removeLike(int filmId, int userId) {
         log.info("Удаление лайка: фильм {}, пользователь {}", filmId, userId);
 
-        // Проверяем существование фильма и пользователя
         filmStorage.findById(filmId);
         userStorage.findById(userId);
 
-        // Удаляем лайк через отдельный storage
         likeStorage.removeLike(filmId, userId);
 
         log.info("Лайк успешно удален");
     }
-
-//    public void removeLike(int filmId, int userId) {
-//        log.info("Удаление лайка: фильм {}, пользователь {}", filmId, userId);
-//
-//        Film film = filmStorage.findById(filmId);
-//        userStorage.findById(userId);
-//
-//        film.getLikes().remove(userId);
-//        filmStorage.update(film);
-//    }
 
     public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
         log.info("Получение топ-{} самых популярных фильмов по жанру id={} и году={}",
@@ -118,7 +94,6 @@ public class FilmService {
 
         directorStorage.getById(directorId);
 
-        // Используем метод из FilmDbStorage, который делает прямой SQL-запрос
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 }
