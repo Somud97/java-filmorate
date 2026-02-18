@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class UserDbStorageTest {
 
     private final UserDbStorage userStorage;
+    private final EventDbStorage eventStorage;
 
     @Test
     void add_shouldCreateUserAndReturnWithId() {

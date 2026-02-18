@@ -30,6 +30,7 @@ class FilmDbStorageTest {
 
     private final FilmDbStorage filmStorage;
     private final UserDbStorage userStorage;
+    private final EventDbStorage eventStorage;
 
     @Test
     void add_shouldCreateFilmAndReturnWithId() {
