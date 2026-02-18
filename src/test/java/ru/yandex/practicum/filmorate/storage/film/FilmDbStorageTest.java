@@ -130,7 +130,7 @@ class FilmDbStorageTest {
         Film film = filmStorage.add(createFilm("ToDelete", "Desc", LocalDate.of(2005, 1, 1), 70));
         int id = film.getId();
 
-        filmStorage.delete(id);
+        filmStorage.deleteById(id);
 
         assertThatThrownBy(() -> filmStorage.findById(id))
                 .isInstanceOf(NotFoundException.class)
@@ -139,7 +139,7 @@ class FilmDbStorageTest {
 
     @Test
     void delete_shouldThrowWhenFilmNotFound() {
-        assertThatThrownBy(() -> filmStorage.delete(99999))
+        assertThatThrownBy(() -> filmStorage.deleteById(99999))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("99999");
     }

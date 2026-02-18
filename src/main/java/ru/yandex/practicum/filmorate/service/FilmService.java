@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class FilmService {
@@ -50,17 +51,36 @@ public class FilmService {
         filmStorage.update(film);
     }
 
-    public List<Film> getMostPopularFilms(int count) {
-        log.info("Получение топ-{} самых популярных фильмов", count);
-
+    public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
+        log.info("Получение топ-{} самых популярных фильмов по жанру id={} и году={}",
+                count, genreId, year);
         if (count <= 0) {
             return List.of();
         }
 
-        return filmStorage.findAll().stream()
-            .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-            .limit(count)
-            .collect(Collectors.toList());
+        Stream<Film> filmStream = filmStorage.findAll().stream();
+
+        if (genreId != null) {
+            filmStream = filmStream.filter(film ->
+                    film.getGenreIds().contains(genreId) ||
+                            film.getGenres().stream()
+                                    .anyMatch(genre -> genre.ordinal() + 1 == genreId)
+            );
+        }
+        if (year != null) {
+            filmStream = filmStream.filter(film ->
+                    film.getReleaseDate() != null &&
+                            film.getReleaseDate().getYear() == year
+            );
+        }
+        return filmStream
+                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    public String deleteById(Integer id) {
+        return filmStorage.deleteById(id);
     }
 
     public List<Film> getFilmsByDirector(int directorId, String sortBy) {

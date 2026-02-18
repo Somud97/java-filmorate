@@ -10,7 +10,7 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    void delete(int id);
+    String deleteById(int id);
 
     Film findById(int id);
 
