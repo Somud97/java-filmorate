@@ -25,7 +25,7 @@ public class ReviewController {
 
     @PostMapping
     public Review createReview(@Valid @RequestBody Review review) {
-        log.info("Получен запрос на создание отзыва: фильм {}, пользователь {}", 
+        log.info("Получен запрос на создание отзыва: фильм {}, пользователь {}",
             review.getFilmId(), review.getUserId());
         Review createdReview = reviewService.addReview(review);
         log.info("Отзыв успешно создан с ID: {}", createdReview.getReviewId());
@@ -54,35 +54,35 @@ public class ReviewController {
 
     @GetMapping
     public List<Review> getReviews(
-            @RequestParam(required = false) Integer filmId,
-            @RequestParam(required = false) Integer count) {
+        @RequestParam(required = false) Integer filmId,
+        @RequestParam(required = false) Integer count) {
         return reviewService.getReviews(filmId, count);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable @Positive int id, 
-                       @PathVariable @Positive int userId) {
+    public void addLike(@PathVariable @Positive int id,
+                        @PathVariable @Positive int userId) {
         log.info("Получен запрос на добавление лайка отзыву {} от пользователя {}", id, userId);
         reviewService.addLike(id, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    public void addDislike(@PathVariable @Positive int id, 
-                          @PathVariable @Positive int userId) {
+    public void addDislike(@PathVariable @Positive int id,
+                           @PathVariable @Positive int userId) {
         log.info("Получен запрос на добавление дизлайка отзыву {} от пользователя {}", id, userId);
         reviewService.addDislike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable @Positive int id, 
-                          @PathVariable @Positive int userId) {
+    public void removeLike(@PathVariable @Positive int id,
+                           @PathVariable @Positive int userId) {
         log.info("Получен запрос на удаление лайка отзыву {} от пользователя {}", id, userId);
         reviewService.removeLike(id, userId);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
-    public void removeDislike(@PathVariable @Positive int id, 
-                             @PathVariable @Positive int userId) {
+    public void removeDislike(@PathVariable @Positive int id,
+                              @PathVariable @Positive int userId) {
         log.info("Получен запрос на удаление дизлайка отзыву {} от пользователя {}", id, userId);
         reviewService.removeDislike(id, userId);
     }
