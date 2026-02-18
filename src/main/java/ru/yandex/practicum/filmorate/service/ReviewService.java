@@ -39,7 +39,7 @@ public class ReviewService {
         // Проверка существования пользователя и фильма
         userStorage.findById(review.getUserId());
         filmStorage.findById(review.getFilmId());
-        
+
         return reviewStorage.add(review);
     }
 
@@ -47,12 +47,12 @@ public class ReviewService {
         log.info("Обновление отзыва с ID: {}", review.getReviewId());
 
         Review existingReview = reviewStorage.findById(review.getReviewId());
-        
+
         // Проверка, что пользователь может редактировать только свой отзыв
         if (!existingReview.getUserId().equals(review.getUserId())) {
             throw new IllegalArgumentException("Пользователь может редактировать только свои отзывы");
         }
-        
+
         return reviewStorage.update(review);
     }
 
@@ -67,7 +67,7 @@ public class ReviewService {
 
     public List<Review> getReviews(Integer filmId, Integer count) {
         int limit = (count != null && count > 0) ? count : DEFAULT_COUNT;
-        
+
         if (filmId != null) {
             log.info("Получение отзывов для фильма {} (лимит: {})", filmId, limit);
             return reviewStorage.findByFilmId(filmId, limit);
@@ -79,37 +79,37 @@ public class ReviewService {
 
     public void addLike(int reviewId, int userId) {
         log.info("Добавление лайка отзыву {} от пользователя {}", reviewId, userId);
-        
+
         reviewStorage.findById(reviewId);
         userStorage.findById(userId);
-        
+
         reviewDbStorage.addLike(reviewId, userId);
     }
 
     public void addDislike(int reviewId, int userId) {
         log.info("Добавление дизлайка отзыву {} от пользователя {}", reviewId, userId);
-        
+
         reviewStorage.findById(reviewId);
         userStorage.findById(userId);
-        
+
         reviewDbStorage.addDislike(reviewId, userId);
     }
 
     public void removeLike(int reviewId, int userId) {
         log.info("Удаление лайка отзыву {} от пользователя {}", reviewId, userId);
-        
+
         reviewStorage.findById(reviewId);
         userStorage.findById(userId);
-        
+
         reviewDbStorage.removeLike(reviewId, userId);
     }
 
     public void removeDislike(int reviewId, int userId) {
         log.info("Удаление дизлайка отзыву {} от пользователя {}", reviewId, userId);
-        
+
         reviewStorage.findById(reviewId);
         userStorage.findById(userId);
-        
+
         reviewDbStorage.removeDislike(reviewId, userId);
     }
 }

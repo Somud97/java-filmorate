@@ -9,13 +9,13 @@ import lombok.Setter;
 @Setter
 public class Review {
     private Integer reviewId;
-    
+
     @NotBlank(message = "Содержание отзыва не может быть пустым")
     private String content;
-    
+
     @NotNull(message = "Тип отзыва должен быть указан")
     private Boolean isPositive;
-    
+
     private Integer userId;
     private Integer filmId;
     private Integer useful;

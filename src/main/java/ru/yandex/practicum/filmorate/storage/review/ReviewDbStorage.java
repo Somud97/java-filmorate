@@ -108,7 +108,7 @@ public class ReviewDbStorage implements ReviewStorage {
     public void addLike(int reviewId, int userId) {
         String checkSql = "SELECT COUNT(*) FROM review_likes WHERE review_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, reviewId, userId);
-        
+
         if (count != null && count > 0) {
             String updateSql = "UPDATE review_likes SET is_positive = true WHERE review_id = ? AND user_id = ?";
             jdbcTemplate.update(updateSql, reviewId, userId);
@@ -122,7 +122,7 @@ public class ReviewDbStorage implements ReviewStorage {
     public void addDislike(int reviewId, int userId) {
         String checkSql = "SELECT COUNT(*) FROM review_likes WHERE review_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, reviewId, userId);
-        
+
         if (count != null && count > 0) {
             String updateSql = "UPDATE review_likes SET is_positive = false WHERE review_id = ? AND user_id = ?";
             jdbcTemplate.update(updateSql, reviewId, userId);
