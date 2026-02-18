@@ -5,11 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.FriendLink;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventServise;
 import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
 
 import java.time.LocalDate;
@@ -27,12 +29,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class UserDbStorageTest {
 
     private final UserDbStorage userStorage;
-    private final EventDbStorage eventStorage;
+
+    @MockBean
+    private EventServise eventServise;
 
     @Test
     void add_shouldCreateUserAndReturnWithId() {
         User user = new User();
-         user.setEmail("user@mail.ru");
+        user.setEmail("user@mail.ru");
         user.setLogin("user1");
         user.setName("User One");
         user.setBirthday(LocalDate.of(1990, 5, 15));
