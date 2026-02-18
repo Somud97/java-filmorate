@@ -86,6 +86,14 @@ public class FilmController {
         return filmService.getMostPopularFilms(count);
     }
 
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(
+            @PathVariable @Positive int directorId,
+            @RequestParam(defaultValue = "year") String sortBy) {
+        log.info("Получен запрос на получение фильмов режиссёра {} с сортировкой по {}", directorId, sortBy);
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
     private void validateMpaAndGenres(Film film) {
         if (film.getMpaaRatingId() != null) {
             mpaaStorage.findById(film.getMpaaRatingId());

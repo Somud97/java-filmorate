@@ -33,6 +33,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", HttpStatus.NOT_FOUND.value());
         errorResponse.put("message", e.getMessage());
+        errorResponse.put("error", e.getMessage());
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }

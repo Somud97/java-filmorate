@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -19,11 +20,14 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DirectorStorage directorStorage;
 
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage) {
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.directorStorage = directorStorage;
     }
 
     public void addLike(int filmId, int userId) {
@@ -57,6 +61,15 @@ public class FilmService {
             .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
             .limit(count)
             .collect(Collectors.toList());
+    }
+
+    public List<Film> getFilmsByDirector(int directorId, String sortBy) {
+        log.info("Получение фильмов режиссёра {} с сортировкой по {}", directorId, sortBy);
+
+        directorStorage.findById(directorId);
+
+        // Используем метод из FilmDbStorage, который делает прямой SQL-запрос
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 }
 
