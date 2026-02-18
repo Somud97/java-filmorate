@@ -32,7 +32,7 @@ class UserDbStorageTest {
     @Test
     void add_shouldCreateUserAndReturnWithId() {
         User user = new User();
-        user.setEmail("user@mail.ru");
+         user.setEmail("user@mail.ru");
         user.setLogin("user1");
         user.setName("User One");
         user.setBirthday(LocalDate.of(1990, 5, 15));
