@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.director;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 
 import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class DirectorDbStorage implements DirectorStorage {
@@ -28,7 +30,7 @@ public class DirectorDbStorage implements DirectorStorage {
     };
 
     @Override
-    public Director add(Director director) {
+    public Director addDirector(Director director) {
         String sql = "INSERT INTO directors (name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -43,22 +45,18 @@ public class DirectorDbStorage implements DirectorStorage {
             throw new RuntimeException("Не удалось получить ID созданного режиссёра");
         }
         director.setId(id);
-        return findById(id);
+        return director;
     }
 
     @Override
-    public Director update(Director director) {
-        String sql = "UPDATE directors SET name = ? WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, director.getName(), director.getId());
-
-        if (rowsAffected == 0) {
-            throw new NotFoundException("Режиссёр с ID " + director.getId() + " не найден");
-        }
-        return findById(director.getId());
+    public Director updateDirector(Director director) {
+        jdbcTemplate.update("UPDATE directors SET name = ? WHERE id = ?",
+                director.getName(), director.getId());
+        return director;
     }
 
     @Override
-    public void delete(int id) {
+    public void deleteDirector(int id) {
         String sql = "DELETE FROM directors WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         if (rowsAffected == 0) {
@@ -67,17 +65,17 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public Director findById(int id) {
-        String sql = "SELECT id, name FROM directors WHERE id = ?";
-        List<Director> directors = jdbcTemplate.query(sql, directorRowMapper, id);
-        if (directors.isEmpty()) {
-            throw new NotFoundException("Режиссёр с ID " + id + " не найден");
+    public Optional<Director> getById(int id) {
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
+                    "SELECT * FROM directors WHERE id = ?", directorRowMapper, id));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
         }
-        return directors.get(0);
     }
 
     @Override
-    public List<Director> findAll() {
+    public List<Director> getAllDirectors() {
         String sql = "SELECT id, name FROM directors ORDER BY id";
         return jdbcTemplate.query(sql, directorRowMapper);
     }
