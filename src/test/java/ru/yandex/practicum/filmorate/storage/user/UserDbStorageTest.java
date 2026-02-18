@@ -30,8 +30,6 @@ class UserDbStorageTest {
 
     private final UserDbStorage userStorage;
 
-    @MockBean
-    private EventServise eventServise;
 
     @Test
     void add_shouldCreateUserAndReturnWithId() {

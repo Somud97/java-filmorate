@@ -33,9 +33,6 @@ class FilmDbStorageTest {
     private final FilmDbStorage filmStorage;
     private final UserDbStorage userStorage;
 
-    @MockBean
-    private EventServise eventServise;
-
     @Test
     void add_shouldCreateFilmAndReturnWithId() {
         Film film = createFilm("Film One", "Description", LocalDate.of(2000, 6, 15), 120);
