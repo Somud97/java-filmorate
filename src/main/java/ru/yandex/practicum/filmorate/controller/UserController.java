@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.event.Event;
-import ru.yandex.practicum.filmorate.service.EventServise;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -24,11 +24,11 @@ public class UserController {
     private final UserStorage userStorage;
     private final UserService userService;
     private final ValidationService validationService;
-    private final EventServise eventServise;
+    private final EventService eventServise;
 
     public UserController(ValidationService validationService,
                           @Qualifier("userDbStorage") UserStorage userStorage,
-                          UserService userService, EventServise eventServise) {
+                          UserService userService, EventService eventServise) {
         this.validationService = validationService;
         this.userStorage = userStorage;
         this.userService = userService;

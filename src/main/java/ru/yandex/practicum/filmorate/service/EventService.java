@@ -11,13 +11,13 @@ import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import java.util.List;
 
 @Service
-public class EventServise {
+public class EventService {
 
-    private static final Logger log = LoggerFactory.getLogger(EventServise.class);
+    private static final Logger log = LoggerFactory.getLogger(EventService.class);
 
     private final EventStorage eventStorage;
 
-    public EventServise(@Qualifier("eventDbStorage") EventStorage eventStorage) {
+    public EventService(@Qualifier("eventDbStorage") EventStorage eventStorage) {
         this.eventStorage = eventStorage;
     }
 

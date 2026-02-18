@@ -23,12 +23,12 @@ public class ReviewService {
     private final ReviewDbStorage reviewDbStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final EventServise eventServise;
+    private final EventService eventServise;
 
     public ReviewService(@Qualifier("reviewDbStorage") ReviewStorage reviewStorage,
                          ReviewDbStorage reviewDbStorage,
                          @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                         @Qualifier("userDbStorage") UserStorage userStorage, EventServise eventServise) {
+                         @Qualifier("userDbStorage") UserStorage userStorage, EventService eventServise) {
         this.reviewStorage = reviewStorage;
         this.reviewDbStorage = reviewDbStorage;
         this.filmStorage = filmStorage;

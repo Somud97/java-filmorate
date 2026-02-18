@@ -21,10 +21,10 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final EventServise eventServise;
+    private final EventService eventServise;
 
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage, EventServise eventServise) {
+                       @Qualifier("userDbStorage") UserStorage userStorage, EventService eventServise) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.eventServise = eventServise;

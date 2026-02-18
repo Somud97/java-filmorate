@@ -20,9 +20,9 @@ public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserStorage userStorage;
-    private final EventServise eventServise;
+    private final EventService eventServise;
 
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, EventServise eventServise) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, EventService eventServise) {
         this.userStorage = userStorage;
         this.eventServise = eventServise;
     }
