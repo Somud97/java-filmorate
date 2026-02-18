@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final String deleteDirectorsQuery = "DELETE FROM film_director WHERE film_id = ?";
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -191,7 +190,7 @@ public class FilmDbStorage implements FilmStorage {
                     "WHERE fd.director_id = ? " +
                     "ORDER BY f.release_date";
             params = new Object[]{directorId};
-        } else { // sortBy = "likes"
+        } else {
             sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpaa_rating_id, " +
                     "mr.code AS mpaa_code, COUNT(fl.user_id) as likes_count " +
                     "FROM films f " +
