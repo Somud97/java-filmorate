@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate.model.event;
 
+import lombok.Data;
+
+@Data
 public class Event {
     private int eventId;
     private int userId;

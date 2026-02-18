@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Event;
+import ru.yandex.practicum.filmorate.service.EventServise;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -22,13 +24,15 @@ public class UserController {
     private final UserStorage userStorage;
     private final UserService userService;
     private final ValidationService validationService;
+    private final EventServise eventServise;
 
     public UserController(ValidationService validationService,
                           @Qualifier("userDbStorage") UserStorage userStorage,
-                          UserService userService) {
+                          UserService userService, EventServise eventServise) {
         this.validationService = validationService;
         this.userStorage = userStorage;
         this.userService = userService;
+        this.eventServise = eventServise;
     }
 
     @PostMapping
@@ -85,5 +89,13 @@ public class UserController {
     public void deleteById(@PathVariable Integer id) {
         log.info("Удаление пользователя с ID: {}", id);
         userService.deleteById(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getUserFeed(@PathVariable int id) {
+        log.info("Список новостей о пользователе с ID: {}", id);
+        List<Event> events = eventServise.getUserFeed(id);
+        log.info("Возвращаем {} событий для пользователя {}", events.size(), id);
+        return events;
     }
 }

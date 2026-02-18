@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface EventStorage {
 
-    List<Event> getUserFeed(int userId, int limit, Long cursor); //ktynf lheptq
+    List<Event> getUserFeed(int userId);
 
     String createLikeEvent(int userId, int entityId, Operation operation);//добавить событие EventType.LIKE
 
@@ -17,4 +17,6 @@ public interface EventStorage {
     String  createReviewEvent(int userId, int entityId, Operation operation); //добавить событие EventType.REVIEW
 
     boolean deleteEventByUserId(int userId); //при удалении пользователя по пути удалить события
+
+    Event createEvent(int userId, int entityId, EventType eventType, Operation operation);
 }

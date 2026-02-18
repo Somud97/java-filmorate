@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.FriendLink;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -19,9 +20,11 @@ public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserStorage userStorage;
+    private final EventServise eventServise;
 
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, EventServise eventServise) {
         this.userStorage = userStorage;
+        this.eventServise = eventServise;
     }
 
     public void addFriend(int userId, int friendId) {
@@ -45,6 +48,8 @@ public class UserService {
             user.getFriendLinks().add(new FriendLink(friendId, FriendshipStatus.UNCONFIRMED));
             userStorage.update(user);
         }
+
+        eventServise.createFriendEvent(userId, friendId, Operation.ADD);
     }
 
     public void removeFriend(int userId, int friendId) {
@@ -55,6 +60,8 @@ public class UserService {
 
         user.getFriendLinks().removeIf(fl -> fl.getFriendId() == friendId);
         userStorage.update(user);
+
+        eventServise.createFriendEvent(userId, friendId, Operation.REMOVE);
     }
 
     public List<User> getFriends(int userId) {
@@ -79,6 +86,10 @@ public class UserService {
 
     public String deleteById(Integer id) {
         log.info("Удаление пользователя с ID: {}", id);
+        log.info("Удаление новостей о пользователе с ID: {}", id);
+
+        eventServise.deleteEventByUserId(id);
+
         return userStorage.deleteById(id);
     }
 }

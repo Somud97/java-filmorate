@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
@@ -22,15 +23,17 @@ public class ReviewService {
     private final ReviewDbStorage reviewDbStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final EventServise eventServise;
 
     public ReviewService(@Qualifier("reviewDbStorage") ReviewStorage reviewStorage,
                          ReviewDbStorage reviewDbStorage,
                          @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                         @Qualifier("userDbStorage") UserStorage userStorage) {
+                         @Qualifier("userDbStorage") UserStorage userStorage, EventServise eventServise) {
         this.reviewStorage = reviewStorage;
         this.reviewDbStorage = reviewDbStorage;
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.eventServise = eventServise;
     }
 
     public Review addReview(Review review) {
@@ -40,7 +43,10 @@ public class ReviewService {
         userStorage.findById(review.getUserId());
         filmStorage.findById(review.getFilmId());
 
-        return reviewStorage.add(review);
+        Review addReview = reviewStorage.add(review);
+        //пришлось создать переменную, потому что id отзыва создается после метода add
+        eventServise.createReviewEvent(addReview.getUserId(), addReview.getReviewId(), Operation.ADD);
+        return addReview;
     }
 
     public Review updateReview(Review review) {
@@ -53,11 +59,16 @@ public class ReviewService {
             throw new IllegalArgumentException("Пользователь может редактировать только свои отзывы");
         }
 
+        eventServise.createReviewEvent(review.getUserId(), review.getReviewId(), Operation.UPDATE);
+
         return reviewStorage.update(review);
     }
 
     public void deleteReview(int reviewId) {
         log.info("Удаление отзыва с ID: {}", reviewId);
+
+        eventServise.createReviewEvent(getReviewById(reviewId).getUserId(), reviewId, Operation.REMOVE);
+
         reviewStorage.delete(reviewId);
     }
 

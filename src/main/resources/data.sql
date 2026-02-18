@@ -23,3 +23,9 @@ INSERT INTO genres (name)
 SELECT 'Документальный' WHERE NOT EXISTS (SELECT 1 FROM genres WHERE name = 'Документальный');
 INSERT INTO genres (name)
 SELECT 'Боевик' WHERE NOT EXISTS (SELECT 1 FROM genres WHERE name = 'Боевик');
+
+INSERT INTO events (user_id, entity_id, event_type, operation, timestamp)
+VALUES
+(1, 100, 'LIKE', 'ADD', 123344556),
+(1, 200, 'FRIEND', 'ADD', 123344557),
+(1, 300, 'REVIEW', 'UPDATE', 123344558);
