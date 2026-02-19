@@ -93,4 +93,8 @@ public class FilmService {
 
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
+
+    public List<Film> searchFilms(String query, String by) {
+        return filmStorage.search(query, by);
+    }
 }

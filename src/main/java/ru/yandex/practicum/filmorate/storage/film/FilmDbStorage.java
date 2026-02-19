@@ -83,6 +83,14 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             saveGenres(film.getId(), film.getGenres());
         }
+
+        //сохраняем режиссеров
+        if (film.getDirectorIds() != null && !film.getDirectorIds().isEmpty()) {
+            saveDirectors(film.getId(), film.getDirectorIds());
+        } else if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            saveDirectorsFromDto(film.getId(), film.getDirectors());
+        }
+
         saveLikes(film.getId(), film.getLikes());
 
         return findById(id);
@@ -422,5 +430,58 @@ public class FilmDbStorage implements FilmStorage {
     private void deleteDirectors(int filmId) {
         String sql = "DELETE FROM film_director WHERE film_id = ?";
         jdbcTemplate.update(sql, filmId);
+    }
+
+    public List<Film> search(String query, String by) {
+        if (query == null || query.trim().isEmpty()) {
+            return findAll();
+        }
+
+        String searchPattern = "%" + query.toLowerCase() + "%";
+        Set<Film> uniqueFilms = new HashSet<>();
+
+        if ("title".equals(by) || "title,director".equals(by)) {
+            String titleSql = "SELECT f.*, mr.code AS mpaa_code " +
+                    "FROM films f " +
+                    "LEFT JOIN mpaa_ratings mr ON f.mpaa_rating_id = mr.id " +
+                    "WHERE LOWER(f.name) LIKE ?";
+
+            List<Film> titleFilms = jdbcTemplate.query(titleSql, filmRowMapper, searchPattern);
+            uniqueFilms.addAll(titleFilms);
+        }
+
+        if ("director".equals(by) || "title,director".equals(by)) {
+            String directorSql = "SELECT f.*, mr.code AS mpaa_code " +
+                    "FROM films f " +
+                    "LEFT JOIN mpaa_ratings mr ON f.mpaa_rating_id = mr.id " +
+                    "JOIN film_director fd ON f.id = fd.film_id " +
+                    "JOIN directors d ON fd.director_id = d.id " +
+                    "WHERE LOWER(d.name) LIKE ?";
+
+            List<Film> directorFilms = jdbcTemplate.query(directorSql, filmRowMapper, searchPattern);
+            uniqueFilms.addAll(directorFilms);
+        }
+
+        List<Film> films = new ArrayList<>(uniqueFilms);
+
+        for (Film film : films) {
+            film.setGenresResponse(loadGenresDto(film.getId()));
+            film.setLikes(loadLikes(film.getId()));
+            film.setDirectors(loadDirectors(film.getId()));
+        }
+
+        films.sort((f1, f2) -> {
+            int compare = Integer.compare(
+                    f2.getLikes().size(),
+                    f1.getLikes().size()
+            );
+            if (compare == 0) {
+                return Integer.compare(f1.getId(), f2.getId());
+            }
+            return compare;
+        });
+
+        films.sort((f1, f2) -> f2.getLikes().size() - f1.getLikes().size());
+        return films;
     }
 }
