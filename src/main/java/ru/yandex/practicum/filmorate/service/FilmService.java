@@ -97,4 +97,8 @@ public class FilmService {
     public List<Film> searchFilms(String query, String by) {
         return filmStorage.search(query, by);
     }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        filmStorage.getCommonFilms(userId, friendId);
+    }
 }

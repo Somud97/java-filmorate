@@ -87,6 +87,14 @@ public class FilmController {
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
 
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(
+            @RequestParam(required = false) Integer userId,
+            @RequestParam(required = false) Integer friendId) {
+        log.info("Запрос общих с другом фильмов с сортировкой по их популярности: userId={}, friendId={}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     private void validateMpaAndGenres(Film film) {
         if (film.getMpaaRatingId() != null) {
             mpaaStorage.findById(film.getMpaaRatingId());

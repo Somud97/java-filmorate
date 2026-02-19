@@ -484,4 +484,9 @@ public class FilmDbStorage implements FilmStorage {
         films.sort((f1, f2) -> f2.getLikes().size() - f1.getLikes().size());
         return films;
     }
+
+    @Override
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        return List.of();
+    }
 }
