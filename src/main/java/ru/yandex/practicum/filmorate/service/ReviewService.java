@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
@@ -13,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ReviewService {
 
     private static final Logger log = LoggerFactory.getLogger(ReviewService.class);
@@ -22,16 +24,7 @@ public class ReviewService {
     private final ReviewDbStorage reviewDbStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-
-    public ReviewService(@Qualifier("reviewDbStorage") ReviewStorage reviewStorage,
-                         ReviewDbStorage reviewDbStorage,
-                         @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                         @Qualifier("userDbStorage") UserStorage userStorage) {
-        this.reviewStorage = reviewStorage;
-        this.reviewDbStorage = reviewDbStorage;
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
+    private final EventService eventService;
 
     public Review addReview(Review review) {
         log.info("Добавление отзыва: пользователь {}, фильм {}", review.getUserId(), review.getFilmId());
@@ -40,7 +33,10 @@ public class ReviewService {
         userStorage.findById(review.getUserId());
         filmStorage.findById(review.getFilmId());
 
-        return reviewStorage.add(review);
+        Review addReview = reviewStorage.add(review);
+        //пришлось создать переменную, потому что id отзыва создается после метода add
+        eventService.createReviewEvent(addReview.getUserId(), addReview.getReviewId(), Operation.ADD);
+        return addReview;
     }
 
     public Review updateReview(Review review) {
@@ -53,11 +49,16 @@ public class ReviewService {
             throw new IllegalArgumentException("Пользователь может редактировать только свои отзывы");
         }
 
+        eventService.createReviewEvent(review.getUserId(), review.getReviewId(), Operation.UPDATE);
+
         return reviewStorage.update(review);
     }
 
     public void deleteReview(int reviewId) {
         log.info("Удаление отзыва с ID: {}", reviewId);
+
+        eventService.createReviewEvent(getReviewById(reviewId).getUserId(), reviewId, Operation.REMOVE);
+
         reviewStorage.delete(reviewId);
     }
 

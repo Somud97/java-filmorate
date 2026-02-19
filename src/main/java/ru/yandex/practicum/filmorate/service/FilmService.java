@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
 
     private static final Logger log = LoggerFactory.getLogger(FilmService.class);
@@ -24,16 +26,7 @@ public class FilmService {
     private final UserStorage userStorage;
     private final DirectorStorage directorStorage;
     private final LikeStorage likeStorage;
-
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage,
-                       DirectorStorage directorStorage,
-                       LikeStorage likeStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-        this.directorStorage = directorStorage;
-        this.likeStorage = likeStorage;
-    }
+    private final EventService eventService;
 
     public void addLike(int filmId, int userId) {
         log.info("Добавление лайка: фильм {}, пользователь {}", filmId, userId);
@@ -42,6 +35,8 @@ public class FilmService {
         userStorage.findById(userId);
 
         likeStorage.addLike(filmId, userId);
+
+        eventService.createLikeEvent(userId, filmId, Operation.ADD);
 
         log.info("Лайк успешно добавлен");
     }
@@ -53,6 +48,8 @@ public class FilmService {
         userStorage.findById(userId);
 
         likeStorage.removeLike(filmId, userId);
+
+        eventService.createLikeEvent(userId, filmId, Operation.REMOVE);
 
         log.info("Лайк успешно удален");
     }
@@ -85,8 +82,8 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public String deleteById(Integer id) {
-        return filmStorage.deleteById(id);
+    public void deleteById(Integer id) {
+        filmStorage.deleteById(id);
     }
 
     public List<Film> getFilmsByDirector(int directorId, String sortBy) {
@@ -97,4 +94,3 @@ public class FilmService {
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 }
-

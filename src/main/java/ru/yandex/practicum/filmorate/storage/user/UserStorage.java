@@ -10,7 +10,7 @@ public interface UserStorage {
 
     User update(User user);
 
-    String deleteById(int id);
+    void deleteById(int id);
 
     User findById(int id);
 

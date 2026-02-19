@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.FriendLink;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -14,15 +15,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserStorage userStorage;
-
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    private final EventService eventService;
 
     public void addFriend(int userId, int friendId) {
         log.info("Добавление в друзья: пользователь {} -> {}", userId, friendId);
@@ -45,6 +44,8 @@ public class UserService {
             user.getFriendLinks().add(new FriendLink(friendId, FriendshipStatus.UNCONFIRMED));
             userStorage.update(user);
         }
+
+        eventService.createFriendEvent(userId, friendId, Operation.ADD);
     }
 
     public void removeFriend(int userId, int friendId) {
@@ -55,6 +56,8 @@ public class UserService {
 
         user.getFriendLinks().removeIf(fl -> fl.getFriendId() == friendId);
         userStorage.update(user);
+
+        eventService.createFriendEvent(userId, friendId, Operation.REMOVE);
     }
 
     public List<User> getFriends(int userId) {
@@ -77,9 +80,13 @@ public class UserService {
             .collect(Collectors.toList());
     }
 
-    public String deleteById(Integer id) {
+    public void deleteById(Integer id) {
         log.info("Удаление пользователя с ID: {}", id);
-        return userStorage.deleteById(id);
+        log.info("Удаление новостей о пользователе с ID: {}", id);
+
+        eventService.deleteEventByUserId(id);
+
+        userStorage.deleteById(id);
     }
 }
 

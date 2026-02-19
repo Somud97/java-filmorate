@@ -2,12 +2,14 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Event;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -17,19 +19,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 @Validated
+@RequiredArgsConstructor
 public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserStorage userStorage;
     private final UserService userService;
     private final ValidationService validationService;
-
-    public UserController(ValidationService validationService,
-                          @Qualifier("userDbStorage") UserStorage userStorage,
-                          UserService userService) {
-        this.validationService = validationService;
-        this.userStorage = userStorage;
-        this.userService = userService;
-    }
+    private final EventService eventService;
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
@@ -85,5 +81,13 @@ public class UserController {
     public void deleteById(@PathVariable Integer id) {
         log.info("Удаление пользователя с ID: {}", id);
         userService.deleteById(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getUserFeed(@PathVariable int id) {
+        log.info("Список новостей о пользователе с ID: {}", id);
+        List<Event> events = eventService.getUserFeed(id);
+        log.info("Возвращаем {} событий для пользователя {}", events.size(), id);
+        return events;
     }
 }
