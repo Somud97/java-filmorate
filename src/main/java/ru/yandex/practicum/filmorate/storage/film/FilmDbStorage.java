@@ -87,7 +87,6 @@ public class FilmDbStorage implements FilmStorage {
             saveGenres(film.getId(), film.getGenres());
         }
 
-        //сохраняем режиссеров
         if (film.getDirectorIds() != null && !film.getDirectorIds().isEmpty()) {
             saveDirectors(film.getId(), film.getDirectorIds());
         } else if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
@@ -162,7 +161,9 @@ public class FilmDbStorage implements FilmStorage {
 
         Film film = films.get(0);
         film.setGenreIds(loadGenreIds(id));
+        film.setGenresResponse(loadGenresDto(id));
         film.setDirectorIds(loadDirectorIds(id));
+        film.setDirectors(loadDirectors(id));
         film.setLikes(loadLikes(id));
 
         return film;
