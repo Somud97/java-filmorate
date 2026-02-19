@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.event.Operation;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Comparator;
@@ -21,37 +24,46 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DirectorStorage directorStorage;
+    private final LikeStorage likeStorage;
     private final EventService eventServise;
 
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       DirectorStorage directorStorage,
+                       LikeStorage likeStorage) {
                        @Qualifier("userDbStorage") UserStorage userStorage, EventService eventServise) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.directorStorage = directorStorage;
+        this.likeStorage = likeStorage;
         this.eventServise = eventServise;
     }
 
     public void addLike(int filmId, int userId) {
         log.info("Добавление лайка: фильм {}, пользователь {}", filmId, userId);
 
-        Film film = filmStorage.findById(filmId);
+        filmStorage.findById(filmId);
         userStorage.findById(userId);
 
-        film.getLikes().add(userId);
-        filmStorage.update(film);
+        likeStorage.addLike(filmId, userId);
 
-        eventServise.createLikeEvent(userId, filmId, Operation.ADD);
+        eventServise.createLikeEvent(userId, filmId, Operation.ADD)
+
+        log.info("Лайк успешно добавлен");
     }
 
     public void removeLike(int filmId, int userId) {
         log.info("Удаление лайка: фильм {}, пользователь {}", filmId, userId);
 
-        Film film = filmStorage.findById(filmId);
+        filmStorage.findById(filmId);
         userStorage.findById(userId);
 
-        film.getLikes().remove(userId);
-        filmStorage.update(film);
+        likeStorage.removeLike(filmId, userId);
 
         eventServise.createLikeEvent(userId, filmId, Operation.REMOVE);
+
+        log.info("Лайк успешно удален");
     }
 
     public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
@@ -84,6 +96,14 @@ public class FilmService {
 
     public String deleteById(Integer id) {
         return filmStorage.deleteById(id);
+    }
+
+    public List<Film> getFilmsByDirector(int directorId, String sortBy) {
+        log.info("Получение фильмов режиссёра {} с сортировкой по {}", directorId, sortBy);
+
+        directorStorage.getById(directorId);
+
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 }
 
