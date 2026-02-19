@@ -21,7 +21,7 @@ public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserStorage userStorage;
-    private final EventService eventServise;
+    private final EventService eventService;
 
     public void addFriend(int userId, int friendId) {
         log.info("Добавление в друзья: пользователь {} -> {}", userId, friendId);
@@ -45,7 +45,7 @@ public class UserService {
             userStorage.update(user);
         }
 
-        eventServise.createFriendEvent(userId, friendId, Operation.ADD);
+        eventService.createFriendEvent(userId, friendId, Operation.ADD);
     }
 
     public void removeFriend(int userId, int friendId) {
@@ -57,7 +57,7 @@ public class UserService {
         user.getFriendLinks().removeIf(fl -> fl.getFriendId() == friendId);
         userStorage.update(user);
 
-        eventServise.createFriendEvent(userId, friendId, Operation.REMOVE);
+        eventService.createFriendEvent(userId, friendId, Operation.REMOVE);
     }
 
     public List<User> getFriends(int userId) {
@@ -80,13 +80,13 @@ public class UserService {
             .collect(Collectors.toList());
     }
 
-    public String deleteById(Integer id) {
+    public void deleteById(Integer id) {
         log.info("Удаление пользователя с ID: {}", id);
         log.info("Удаление новостей о пользователе с ID: {}", id);
 
-        eventServise.deleteEventByUserId(id);
+        eventService.deleteEventByUserId(id);
 
-        return userStorage.deleteById(id);
+        userStorage.deleteById(id);
     }
 }
 

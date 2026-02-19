@@ -2,9 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -19,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 @Validated
+@RequiredArgsConstructor
 public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private final FilmStorage filmStorage;
@@ -26,18 +27,6 @@ public class FilmController {
     private final MpaaStorage mpaaStorage;
     private final FilmService filmService;
     private final ValidationService validationService;
-
-    public FilmController(ValidationService validationService,
-                          @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                          GenreStorage genreStorage,
-                          MpaaStorage mpaaStorage,
-                          FilmService filmService) {
-        this.validationService = validationService;
-        this.filmStorage = filmStorage;
-        this.genreStorage = genreStorage;
-        this.mpaaStorage = mpaaStorage;
-        this.filmService = filmService;
-    }
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {

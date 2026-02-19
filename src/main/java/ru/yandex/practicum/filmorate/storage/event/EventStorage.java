@@ -10,11 +10,11 @@ public interface EventStorage {
 
     List<Event> getUserFeed(int userId);
 
-    String createLikeEvent(int userId, int entityId, Operation operation);//добавить событие EventType.LIKE
+    void createLikeEvent(int userId, int entityId, Operation operation);//добавить событие EventType.LIKE
 
-    String  createFriendEvent(int userId, int entityId, Operation operation); //добавить событие EventType.FRIEND
+    void createFriendEvent(int userId, int entityId, Operation operation); //добавить событие EventType.FRIEND
 
-    String  createReviewEvent(int userId, int entityId, Operation operation); //добавить событие EventType.REVIEW
+    void createReviewEvent(int userId, int entityId, Operation operation); //добавить событие EventType.REVIEW
 
     boolean deleteEventByUserId(int userId); //при удалении пользователя по пути удалить события
 

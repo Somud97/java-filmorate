@@ -2,9 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
@@ -19,21 +19,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 @Validated
+@RequiredArgsConstructor
 public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserStorage userStorage;
     private final UserService userService;
     private final ValidationService validationService;
-    private final EventService eventServise;
-
-    public UserController(ValidationService validationService,
-                          @Qualifier("userDbStorage") UserStorage userStorage,
-                          UserService userService, EventService eventServise) {
-        this.validationService = validationService;
-        this.userStorage = userStorage;
-        this.userService = userService;
-        this.eventServise = eventServise;
-    }
+    private final EventService eventService;
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
@@ -94,7 +86,7 @@ public class UserController {
     @GetMapping("/{id}/feed")
     public List<Event> getUserFeed(@PathVariable int id) {
         log.info("Список новостей о пользователе с ID: {}", id);
-        List<Event> events = eventServise.getUserFeed(id);
+        List<Event> events = eventService.getUserFeed(id);
         log.info("Возвращаем {} событий для пользователя {}", events.size(), id);
         return events;
     }

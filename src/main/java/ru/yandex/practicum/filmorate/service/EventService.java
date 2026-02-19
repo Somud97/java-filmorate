@@ -24,19 +24,19 @@ public class EventService {
         return events;
     }
 
-    public String createLikeEvent(int userId, int entityId, Operation operation) {
+    public void createLikeEvent(int userId, int entityId, Operation operation) {
         log.info("Создание события LIKE");
-        return eventStorage.createLikeEvent(userId, entityId, operation);
+        eventStorage.createLikeEvent(userId, entityId, operation);
     }
 
-    public String createFriendEvent(int userId, int entityId, Operation operation) {
+    public void createFriendEvent(int userId, int entityId, Operation operation) {
         log.info("Создание события FRIEND");
-        return eventStorage.createFriendEvent(userId, entityId, operation);
+        eventStorage.createFriendEvent(userId, entityId, operation);
     }
 
-    public String createReviewEvent(int userId, int entityId, Operation operation) {
+    public void createReviewEvent(int userId, int entityId, Operation operation) {
         log.info("Создание события REVIEW");
-        return eventStorage.createReviewEvent(userId, entityId, operation);
+        eventStorage.createReviewEvent(userId, entityId, operation);
     }
 
     public boolean deleteEventByUserId(int userId) {

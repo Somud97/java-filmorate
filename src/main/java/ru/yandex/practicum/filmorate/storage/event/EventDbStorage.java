@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.event;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -19,14 +18,10 @@ import java.util.List;
 
 @Component
 @Qualifier("eventDbStorage")
+@RequiredArgsConstructor
 public class EventDbStorage implements EventStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private static final Logger log = LoggerFactory.getLogger(EventDbStorage.class);
-
-    public EventDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     private final RowMapper<Event> eventRowMapper = (ResultSet rs, int rowNum) -> {
         return new Event(
@@ -41,8 +36,6 @@ public class EventDbStorage implements EventStorage {
 
     @Override
     public List<Event> getUserFeed(int userId) {
-        log.info("Получение всех новостей пользователя с ID: {}", userId);
-
         String sql = "SELECT * FROM events WHERE user_id = ? ORDER BY timestamp ASC";
         List<Event> events = jdbcTemplate.query(sql, eventRowMapper, userId);
 
@@ -50,21 +43,18 @@ public class EventDbStorage implements EventStorage {
     }
 
     @Override
-    public String createLikeEvent(int userId, int entityId, Operation operation) {
+    public void createLikeEvent(int userId, int entityId, Operation operation) {
         createEvent(userId, entityId, EventType.LIKE, operation);
-        return "Событие LIKE успешно создано";
     }
 
     @Override
-    public String createFriendEvent(int userId, int entityId, Operation operation) {
+    public void createFriendEvent(int userId, int entityId, Operation operation) {
         createEvent(userId, entityId, EventType.FRIEND, operation);
-        return "Событие FRIEND успешно создано";
     }
 
     @Override
-    public String createReviewEvent(int userId, int entityId, Operation operation) {
+    public void createReviewEvent(int userId, int entityId, Operation operation) {
         createEvent(userId, entityId, EventType.REVIEW, operation);
-        return "Событие REVIEW успешно создано";
     }
 
     @Override

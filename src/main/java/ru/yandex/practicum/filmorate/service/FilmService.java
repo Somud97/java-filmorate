@@ -26,7 +26,7 @@ public class FilmService {
     private final UserStorage userStorage;
     private final DirectorStorage directorStorage;
     private final LikeStorage likeStorage;
-    private final EventService eventServise;
+    private final EventService eventService;
 
     public void addLike(int filmId, int userId) {
         log.info("Добавление лайка: фильм {}, пользователь {}", filmId, userId);
@@ -36,7 +36,7 @@ public class FilmService {
 
         likeStorage.addLike(filmId, userId);
 
-        eventServise.createLikeEvent(userId, filmId, Operation.ADD);
+        eventService.createLikeEvent(userId, filmId, Operation.ADD);
 
         log.info("Лайк успешно добавлен");
     }
@@ -49,7 +49,7 @@ public class FilmService {
 
         likeStorage.removeLike(filmId, userId);
 
-        eventServise.createLikeEvent(userId, filmId, Operation.REMOVE);
+        eventService.createLikeEvent(userId, filmId, Operation.REMOVE);
 
         log.info("Лайк успешно удален");
     }
@@ -82,8 +82,8 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public String deleteById(Integer id) {
-        return filmStorage.deleteById(id);
+    public void deleteById(Integer id) {
+        filmStorage.deleteById(id);
     }
 
     public List<Film> getFilmsByDirector(int directorId, String sortBy) {
