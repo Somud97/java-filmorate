@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.FriendLink;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.event.Operation;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class UserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    private final UserStorage userStorage;
+    private final UserDbStorage userStorage;
     private final EventService eventService;
 
     public void addFriend(int userId, int friendId) {
@@ -67,6 +68,8 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(int userId, int otherUserId) {
+        userStorage.validateUser(userId);
+        userStorage.validateUser(otherUserId);
         Set<Integer> userFriendIds = userStorage.findById(userId).getFriendLinks().stream()
             .map(FriendLink::getFriendId)
             .collect(Collectors.toSet());

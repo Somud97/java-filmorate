@@ -7,6 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -16,6 +17,7 @@ import ru.yandex.practicum.filmorate.model.dto.GenreDto;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,6 +55,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film add(Film film) {
+        validateFilmInTheFuture(film);
         String sql = "INSERT INTO films (name, description, release_date, duration, mpaa_rating_id) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -98,6 +101,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
+        validateFilm(film.getId());
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpaa_rating_id = ? WHERE id = ?";
         Integer mpaaRatingId = resolveMpaaRatingId(film);
 
@@ -135,6 +139,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteById(int id) {
+        validateFilm(id);
         String sql = "DELETE FROM films WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         if (rowsAffected == 0) {
@@ -144,22 +149,20 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film findById(int id) {
+        validateFilm(id);
+
         String sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpaa_rating_id, " +
                 "mr.code AS mpaa_code FROM films f " +
                 "LEFT JOIN mpaa_ratings mr ON f.mpaa_rating_id = mr.id WHERE f.id = ?";
+
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, id);
         if (films.isEmpty()) {
             throw new NotFoundException("Фильм с ID " + id + " не найден");
         }
+
         Film film = films.get(0);
-
-        film.setGenres(loadGenres(id));
         film.setGenreIds(loadGenreIds(id));
-        film.setGenresResponse(loadGenresDto(id));
-
         film.setDirectorIds(loadDirectorIds(id));
-        film.setDirectors(loadDirectors(id));
-
         film.setLikes(loadLikes(id));
 
         return film;
@@ -483,6 +486,22 @@ public class FilmDbStorage implements FilmStorage {
 
         films.sort((f1, f2) -> f2.getLikes().size() - f1.getLikes().size());
         return films;
+    }
+
+    public void validateFilm(Integer id) {
+        String sql = "SELECT COUNT(*) FROM films WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        if (count == null || count == 0) {
+            throw new NotFoundException("Фильм с ID " + id + " не найден");
+        }
+    }
+
+    private void validateFilmInTheFuture(Film film) {
+        final LocalDate MIN_RELEASE_DATE =
+                LocalDate.of(1895, 12, 28);
+        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
+            throw new ValidationException("Какато фигня");
+        }
     }
 
     @Override

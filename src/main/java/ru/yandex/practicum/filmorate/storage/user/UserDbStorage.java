@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -21,14 +22,10 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-@Qualifier("userDbStorage")
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     private final RowMapper<User> userRowMapper = (rs, rowNum) -> {
         User user = new User();
@@ -70,6 +67,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User user) {
+        validateUser(user.getId());
         String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql,
             user.getEmail(),
@@ -90,20 +88,16 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteById(int id) {
+        validateUser(id);
         String sql = "DELETE FROM users WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, id);
-        if (rowsAffected == 0) {
-            throw new NotFoundException("Пользователь с ID " + id + " не найден");
-        }
+        jdbcTemplate.update(sql, id);
     }
 
     @Override
     public User findById(int id) {
+        validateUser(id);
         String sql = "SELECT id, email, login, name, birthday FROM users WHERE id = ?";
         List<User> users = jdbcTemplate.query(sql, userRowMapper, id);
-        if (users.isEmpty()) {
-            throw new NotFoundException("Пользователь с ID " + id + " не найден");
-        }
         User user = users.get(0);
         user.setFriendLinks(loadFriendLinks(id));
         return user;
@@ -134,6 +128,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     private Set<FriendLink> loadFriendLinks(int userId) {
+        validateUser(userId);
         String sql = "SELECT friend_id, status FROM user_friends WHERE user_id = ?";
         List<FriendLink> links = jdbcTemplate.query(sql,
             (rs, rowNum) -> {
@@ -147,6 +142,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     private void saveFriendLinks(int userId, Set<FriendLink> friendLinks) {
+        validateUser(userId);
         if (friendLinks == null || friendLinks.isEmpty()) {
             return;
         }
@@ -159,7 +155,16 @@ public class UserDbStorage implements UserStorage {
     }
 
     private void deleteFriendLinks(int userId) {
+        validateUser(userId);
         String sql = "DELETE FROM user_friends WHERE user_id = ?";
         jdbcTemplate.update(sql, userId);
+    }
+
+    public void validateUser(Integer id) {
+        String sql = "SELECT COUNT(*) FROM users WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        if (count == null || count == 0) {
+            throw new NotFoundException("Пользователь с ID " + id + " не найден");
+        }
     }
 }

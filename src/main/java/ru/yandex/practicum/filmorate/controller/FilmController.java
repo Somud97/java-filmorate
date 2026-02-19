@@ -49,7 +49,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable @Positive int id) {
+    public Film getFilmById(@PathVariable int id) {
         return filmStorage.findById(id);
     }
 
@@ -59,20 +59,20 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
+    public void addLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Получен запрос на добавление лайка фильму {} от пользователя {}", id, userId);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
+    public void removeLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Получен запрос на удаление лайка у фильма {} от пользователя {}", id, userId);
         filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(
-            @RequestParam(defaultValue = "10") @Positive int count,
+            @RequestParam(defaultValue = "10") int count,
             @RequestParam(required = false) Integer genreId,
             @RequestParam(required = false) Integer year) {
         log.info("Запрос популярных фильмов: count={}, genreId={}, year={}", count, genreId, year);
@@ -81,7 +81,7 @@ public class FilmController {
 
     @GetMapping("/director/{directorId}")
     public List<Film> getFilmsByDirector(
-            @PathVariable @Positive int directorId,
+            @PathVariable int directorId,
             @RequestParam(defaultValue = "year") String sortBy) {
         log.info("Получен запрос на получение фильмов режиссёра {} с сортировкой по {}", directorId, sortBy);
         return filmService.getFilmsByDirector(directorId, sortBy);
