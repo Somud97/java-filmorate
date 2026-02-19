@@ -11,9 +11,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.event.Event;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -22,16 +22,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-    private final UserStorage userStorage;
     private final UserService userService;
-    private final ValidationService validationService;
     private final EventService eventService;
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на создание пользователя: {}", user.getLogin());
-        validationService.validateUser(user);
-        User createdUser = userStorage.add(user);
+        User createdUser = userService.add(user);
         log.info("Пользователь успешно создан с ID: {}", createdUser.getId());
         return createdUser;
     }
@@ -39,20 +36,20 @@ public class UserController {
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя с ID: {}", user.getId());
-        validationService.validateUser(user);
-        User updatedUser = userStorage.update(user);
+        User updatedUser = userService.update(user);
         log.info("Пользователь с ID {} успешно обновлен", updatedUser.getId());
         return updatedUser;
     }
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable @Positive int id) {
-        return userStorage.findById(id);
+        return userService.findById(id);
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userStorage.findAll();
+    public Collection<User> getAllUsers() {
+        log.info("Получен запрос на получение всех пользователей");
+        return userService.findAll();
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -78,13 +75,13 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable Integer id) {
+    public void deleteById(@PathVariable @Positive Integer id) {
         log.info("Удаление пользователя с ID: {}", id);
         userService.deleteById(id);
     }
 
     @GetMapping("/{id}/feed")
-    public List<Event> getUserFeed(@PathVariable int id) {
+    public List<Event> getUserFeed(@PathVariable @Positive int id) {
         log.info("Список новостей о пользователе с ID: {}", id);
         List<Event> events = eventService.getUserFeed(id);
         log.info("Возвращаем {} событий для пользователя {}", events.size(), id);

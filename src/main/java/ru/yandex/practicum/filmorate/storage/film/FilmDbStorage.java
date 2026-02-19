@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,6 +17,7 @@ import ru.yandex.practicum.filmorate.model.dto.GenreDto;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -483,5 +485,22 @@ public class FilmDbStorage implements FilmStorage {
 
         films.sort((f1, f2) -> f2.getLikes().size() - f1.getLikes().size());
         return films;
+    }
+
+    public Film validateFilmExists(Integer id) {
+        String sql = "SELECT COUNT(*) FROM film WHERE film_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        if (count == null || count == 0) {
+            throw new NotFoundException("Фильм с ID " + id + " не найден");
+        }
+        return findById(id);
+    }
+
+    private void validateFilmInTheFuture(Film film) {
+        final LocalDate MIN_RELEASE_DATE =
+                LocalDate.of(1895, 12, 28);
+        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
+            throw new ValidationException("Какато фигня");
+        }
     }
 }

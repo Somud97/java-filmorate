@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -10,77 +11,52 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.FriendLink;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.dal.mappers.UserRowMapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.Statement;
+import java.util.*;
 
 @Component
-@Qualifier("userDbStorage")
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    private final RowMapper<User> userRowMapper = (rs, rowNum) -> {
-        User user = new User();
-        user.setId(rs.getInt("id"));
-        user.setEmail(rs.getString("email"));
-        user.setLogin(rs.getString("login"));
-        user.setName(rs.getString("name"));
-        Date birthday = rs.getDate("birthday");
-        if (birthday != null) {
-            user.setBirthday(birthday.toLocalDate());
-        }
-        return user;
-    };
+    private final UserRowMapper userRowMapper;
 
     @Override
     public User add(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
         String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, user.getEmail());
             ps.setString(2, user.getLogin());
             ps.setString(3, user.getName());
-            ps.setDate(4, user.getBirthday() != null ? Date.valueOf(user.getBirthday()) : null);
+            ps.setDate(4, java.sql.Date.valueOf(user.getBirthday()));
             return ps;
         }, keyHolder);
-
-        Integer id = keyHolder.getKey() != null ? keyHolder.getKey().intValue() : null;
-        if (id == null) {
-            throw new RuntimeException("Не удалось получить ID созданного пользователя");
+        Number key = keyHolder.getKey();
+        if (key != null) {
+            user.setId(key.intValue());
         }
-        user.setId(id);
-
-        saveFriendLinks(user.getId(), user.getFriendLinks());
-
-        return findById(id);
+        return user;
     }
 
     @Override
     public User update(User user) {
+        validateUserExists(user.getId());
         String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql,
+        jdbcTemplate.update(sql,
             user.getEmail(),
             user.getLogin(),
             user.getName(),
             user.getBirthday() != null ? Date.valueOf(user.getBirthday()) : null,
             user.getId());
-
-        if (rowsAffected == 0) {
-            throw new NotFoundException("Пользователь с ID " + user.getId() + " не найден");
-        }
 
         deleteFriendLinks(user.getId());
         saveFriendLinks(user.getId(), user.getFriendLinks());
@@ -90,34 +66,22 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteById(int id) {
+        validateUserExists(id);
         String sql = "DELETE FROM users WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, id);
-        if (rowsAffected == 0) {
-            throw new NotFoundException("Пользователь с ID " + id + " не найден");
-        }
+        jdbcTemplate.update(sql, id);
     }
 
     @Override
     public User findById(int id) {
-        String sql = "SELECT id, email, login, name, birthday FROM users WHERE id = ?";
-        List<User> users = jdbcTemplate.query(sql, userRowMapper, id);
-        if (users.isEmpty()) {
-            throw new NotFoundException("Пользователь с ID " + id + " не найден");
-        }
-        User user = users.get(0);
-        user.setFriendLinks(loadFriendLinks(id));
-        return user;
+        validateUserExists(id);
+        String sql = "SELECT * FROM users WHERE id = ?";
+        return jdbcTemplate.queryForObject(sql, userRowMapper, id);
     }
 
     @Override
-    public List<User> findAll() {
-        String sql = "SELECT id, email, login, name, birthday FROM users";
-        List<User> users = jdbcTemplate.query(sql, userRowMapper);
-        Map<Integer, Set<FriendLink>> linksByUser = loadAllFriendLinks();
-        for (User user : users) {
-            user.setFriendLinks(linksByUser.getOrDefault(user.getId(), new HashSet<>()));
-        }
-        return users;
+    public Collection<User> findAll() {
+        String sql = "SELECT * FROM users";
+        return jdbcTemplate.query(sql, userRowMapper);
     }
 
     private Map<Integer, Set<FriendLink>> loadAllFriendLinks() {
@@ -134,6 +98,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     private Set<FriendLink> loadFriendLinks(int userId) {
+        validateUserExists(userId);
         String sql = "SELECT friend_id, status FROM user_friends WHERE user_id = ?";
         List<FriendLink> links = jdbcTemplate.query(sql,
             (rs, rowNum) -> {
@@ -147,6 +112,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     private void saveFriendLinks(int userId, Set<FriendLink> friendLinks) {
+        validateUserExists(userId);
         if (friendLinks == null || friendLinks.isEmpty()) {
             return;
         }
@@ -159,7 +125,16 @@ public class UserDbStorage implements UserStorage {
     }
 
     private void deleteFriendLinks(int userId) {
+        validateUserExists(userId);
         String sql = "DELETE FROM user_friends WHERE user_id = ?";
         jdbcTemplate.update(sql, userId);
+    }
+
+    private void validateUserExists(int id) {
+        String sql = "SELECT COUNT(*) FROM users WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        if (count == null || count == 0) {
+            throw new NotFoundException("Пользователь с id " + id + " не найден");
+        }
     }
 }
