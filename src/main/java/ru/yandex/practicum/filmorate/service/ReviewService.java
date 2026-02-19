@@ -24,7 +24,7 @@ public class ReviewService {
     private final ReviewDbStorage reviewDbStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final EventService eventServise;
+    private final EventService eventService;
 
     public Review addReview(Review review) {
         log.info("Добавление отзыва: пользователь {}, фильм {}", review.getUserId(), review.getFilmId());
@@ -35,7 +35,7 @@ public class ReviewService {
 
         Review addReview = reviewStorage.add(review);
         //пришлось создать переменную, потому что id отзыва создается после метода add
-        eventServise.createReviewEvent(addReview.getUserId(), addReview.getReviewId(), Operation.ADD);
+        eventService.createReviewEvent(addReview.getUserId(), addReview.getReviewId(), Operation.ADD);
         return addReview;
     }
 
@@ -49,7 +49,7 @@ public class ReviewService {
             throw new IllegalArgumentException("Пользователь может редактировать только свои отзывы");
         }
 
-        eventServise.createReviewEvent(review.getUserId(), review.getReviewId(), Operation.UPDATE);
+        eventService.createReviewEvent(review.getUserId(), review.getReviewId(), Operation.UPDATE);
 
         return reviewStorage.update(review);
     }
@@ -57,7 +57,7 @@ public class ReviewService {
     public void deleteReview(int reviewId) {
         log.info("Удаление отзыва с ID: {}", reviewId);
 
-        eventServise.createReviewEvent(getReviewById(reviewId).getUserId(), reviewId, Operation.REMOVE);
+        eventService.createReviewEvent(getReviewById(reviewId).getUserId(), reviewId, Operation.REMOVE);
 
         reviewStorage.delete(reviewId);
     }
