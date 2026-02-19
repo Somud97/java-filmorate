@@ -470,6 +470,17 @@ public class FilmDbStorage implements FilmStorage {
             film.setDirectors(loadDirectors(film.getId()));
         }
 
+        films.sort((f1, f2) -> {
+            int compare = Integer.compare(
+                    f2.getLikes().size(),
+                    f1.getLikes().size()
+            );
+            if (compare == 0) {
+                return Integer.compare(f1.getId(), f2.getId());
+            }
+            return compare;
+        });
+
         films.sort((f1, f2) -> f2.getLikes().size() - f1.getLikes().size());
         return films;
     }
