@@ -506,6 +506,34 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(int userId, int friendId) {
-        return List.of();
+        String sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpaa_rating_id, " +
+                "mr.code AS mpaa_code, COUNT(DISTINCT fl.user_id) as likes_count " +
+                "FROM films f " +
+                "LEFT JOIN mpaa_ratings mr ON f.mpaa_rating_id = mr.id " +
+                "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
+                "WHERE f.id IN (" +
+                "    SELECT fl1.film_id " +
+                "    FROM film_likes fl1 " +
+                "    WHERE fl1.user_id = ? " +
+                "    INTERSECT " +
+                "    SELECT fl2.film_id " +
+                "    FROM film_likes fl2 " +
+                "    WHERE fl2.user_id = ?" +
+                ") " +
+                "GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpaa_rating_id, mr.code " +
+                "ORDER BY likes_count DESC, f.id";
+
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
+
+        for (Film film : films) {
+            film.setGenres(loadGenres(film.getId()));
+            film.setGenreIds(loadGenreIds(film.getId()));
+            film.setGenresResponse(loadGenresDto(film.getId()));
+            film.setDirectorIds(loadDirectorIds(film.getId()));
+            film.setDirectors(loadDirectors(film.getId()));
+            film.setLikes(loadLikes(film.getId()));
+        }
+
+        return films;
     }
 }

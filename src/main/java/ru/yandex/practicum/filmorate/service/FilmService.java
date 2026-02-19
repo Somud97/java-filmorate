@@ -99,6 +99,10 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilms(int userId, int friendId) {
-        filmStorage.getCommonFilms(userId, friendId);
+        log.info("Получение общих фильмов пользователей {} и {}", userId, friendId);
+
+        userStorage.findById(userId);
+        userStorage.findById(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }
