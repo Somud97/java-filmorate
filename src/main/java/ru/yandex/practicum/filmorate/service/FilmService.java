@@ -97,4 +97,12 @@ public class FilmService {
     public List<Film> searchFilms(String query, String by) {
         return filmStorage.search(query, by);
     }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        log.info("Получение общих фильмов пользователей {} и {}", userId, friendId);
+
+        userStorage.findById(userId);
+        userStorage.findById(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
 }

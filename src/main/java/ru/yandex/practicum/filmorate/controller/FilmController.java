@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +84,14 @@ public class FilmController {
             @RequestParam(defaultValue = "year") String sortBy) {
         log.info("Получен запрос на получение фильмов режиссёра {} с сортировкой по {}", directorId, sortBy);
         return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(
+            @RequestParam(required = false) Integer userId,
+            @RequestParam(required = false) Integer friendId) {
+        log.info("Запрос общих с другом фильмов с сортировкой по их популярности: userId={}, friendId={}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     private void validateMpaAndGenres(Film film) {
