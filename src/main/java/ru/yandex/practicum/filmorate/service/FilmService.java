@@ -1,13 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
-import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -18,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
 
     private static final Logger log = LoggerFactory.getLogger(FilmService.class);
@@ -28,18 +28,6 @@ public class FilmService {
     private final LikeStorage likeStorage;
     private final EventService eventServise;
 
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage,
-                       DirectorStorage directorStorage,
-                       LikeStorage likeStorage) {
-                       @Qualifier("userDbStorage") UserStorage userStorage, EventService eventServise) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-        this.directorStorage = directorStorage;
-        this.likeStorage = likeStorage;
-        this.eventServise = eventServise;
-    }
-
     public void addLike(int filmId, int userId) {
         log.info("Добавление лайка: фильм {}, пользователь {}", filmId, userId);
 
@@ -48,7 +36,7 @@ public class FilmService {
 
         likeStorage.addLike(filmId, userId);
 
-        eventServise.createLikeEvent(userId, filmId, Operation.ADD)
+        eventServise.createLikeEvent(userId, filmId, Operation.ADD);
 
         log.info("Лайк успешно добавлен");
     }
@@ -106,4 +94,3 @@ public class FilmService {
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 }
-

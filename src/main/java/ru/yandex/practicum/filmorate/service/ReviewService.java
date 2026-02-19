@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.event.Operation;
@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ReviewService {
 
     private static final Logger log = LoggerFactory.getLogger(ReviewService.class);
@@ -24,17 +25,6 @@ public class ReviewService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final EventService eventServise;
-
-    public ReviewService(@Qualifier("reviewDbStorage") ReviewStorage reviewStorage,
-                         ReviewDbStorage reviewDbStorage,
-                         @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                         @Qualifier("userDbStorage") UserStorage userStorage, EventService eventServise) {
-        this.reviewStorage = reviewStorage;
-        this.reviewDbStorage = reviewDbStorage;
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-        this.eventServise = eventServise;
-    }
 
     public Review addReview(Review review) {
         log.info("Добавление отзыва: пользователь {}, фильм {}", review.getUserId(), review.getFilmId());

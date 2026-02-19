@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.event.Event;
 import ru.yandex.practicum.filmorate.model.event.Operation;
@@ -11,15 +11,12 @@ import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class EventService {
 
     private static final Logger log = LoggerFactory.getLogger(EventService.class);
 
     private final EventStorage eventStorage;
-
-    public EventService(@Qualifier("eventDbStorage") EventStorage eventStorage) {
-        this.eventStorage = eventStorage;
-    }
 
     public List<Event> getUserFeed(int userId) {
         log.info("Получение всех новостей пользователя с ID: {}", userId);
