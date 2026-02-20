@@ -15,11 +15,15 @@ import ru.yandex.practicum.filmorate.validation.ValidationUtils;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -107,6 +111,29 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public List<User> findByIds(Collection<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        List<Integer> idList = new ArrayList<>(ids);
+        String placeholders = String.join(",", Collections.nCopies(idList.size(), "?"));
+        String sql = "SELECT id, email, login, name, birthday FROM users WHERE id IN (" + placeholders + ")";
+        List<User> users = jdbcTemplate.query(sql, userRowMapper, idList.toArray());
+        if (users.isEmpty()) {
+            return List.of();
+        }
+        Map<Integer, Set<FriendLink>> linksByUser = loadFriendLinksForUserIds(idList);
+        for (User user : users) {
+            user.setFriendLinks(linksByUser.getOrDefault(user.getId(), new HashSet<>()));
+        }
+        Map<Integer, User> userById = users.stream().collect(Collectors.toMap(User::getId, u -> u));
+        return idList.stream()
+                .map(userById::get)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Override
     public List<User> findAll() {
         String sql = "SELECT id, email, login, name, birthday FROM users";
         List<User> users = jdbcTemplate.query(sql, userRowMapper);
@@ -142,6 +169,22 @@ public class UserDbStorage implements UserStorage {
             },
             userId);
         return new HashSet<>(links);
+    }
+
+    private Map<Integer, Set<FriendLink>> loadFriendLinksForUserIds(List<Integer> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+        String placeholders = String.join(",", Collections.nCopies(userIds.size(), "?"));
+        String sql = "SELECT user_id, friend_id, status FROM user_friends WHERE user_id IN (" + placeholders + ")";
+        Map<Integer, Set<FriendLink>> result = new HashMap<>();
+        jdbcTemplate.query(sql, userIds.toArray(), rs -> {
+            int userId = rs.getInt("user_id");
+            int friendId = rs.getInt("friend_id");
+            FriendshipStatus status = FriendshipStatus.valueOf(rs.getString("status"));
+            result.computeIfAbsent(userId, k -> new HashSet<>()).add(new FriendLink(friendId, status));
+        });
+        return result;
     }
 
     private void saveFriendLinks(int userId, Set<FriendLink> friendLinks) {

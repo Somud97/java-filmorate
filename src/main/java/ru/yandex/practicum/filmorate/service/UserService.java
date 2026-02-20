@@ -70,9 +70,10 @@ public class UserService {
     }
 
     public List<User> getFriends(int userId) {
-        return userStorage.findById(userId).getFriendLinks().stream()
-                .map(fl -> userStorage.findById(fl.getFriendId()))
-                .collect(Collectors.toList());
+        List<Integer> friendIds = userStorage.findById(userId).getFriendLinks().stream()
+                .map(FriendLink::getFriendId)
+                .toList();
+        return userStorage.findByIds(friendIds);
     }
 
     public List<User> getCommonFriends(int userId, int otherUserId) {
@@ -85,10 +86,10 @@ public class UserService {
                 .map(FriendLink::getFriendId)
                 .collect(Collectors.toSet());
 
-        return userFriendIds.stream()
+        List<Integer> commonIds = userFriendIds.stream()
                 .filter(otherFriendIds::contains)
-                .map(userStorage::findById)
-                .collect(Collectors.toList());
+                .toList();
+        return userStorage.findByIds(commonIds);
     }
 
     public void deleteById(Integer id) {
@@ -115,8 +116,6 @@ public class UserService {
             return List.of();
         }
 
-        return filmIds.stream()
-                .map(filmStorage::findById)
-                .toList();
+        return filmStorage.findByIds(filmIds);
     }
 }

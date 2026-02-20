@@ -165,6 +165,28 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> findByIds(Collection<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        List<Integer> idList = new ArrayList<>(ids);
+        String placeholders = String.join(",", Collections.nCopies(idList.size(), "?"));
+        String sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpaa_rating_id, " +
+                "mr.code AS mpaa_code FROM films f " +
+                "LEFT JOIN mpaa_ratings mr ON f.mpaa_rating_id = mr.id WHERE f.id IN (" + placeholders + ")";
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, idList.toArray());
+        if (films.isEmpty()) {
+            return List.of();
+        }
+        loadGenresAndDirectorsForFilms(films);
+        Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+        return idList.stream()
+                .map(filmById::get)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Override
     public List<Film> findAll() {
         String sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpaa_rating_id, " +
                 "mr.code AS mpaa_code FROM films f " +
