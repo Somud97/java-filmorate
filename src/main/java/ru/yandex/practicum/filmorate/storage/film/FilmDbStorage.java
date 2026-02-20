@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -13,23 +13,20 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaaRating;
 import ru.yandex.practicum.filmorate.model.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.model.dto.GenreDto;
+import ru.yandex.practicum.filmorate.validation.ValidationUtils;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
-@Qualifier("filmDbStorage")
+@RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final ValidationUtils validationUtils;
 
     private final RowMapper<Film> filmRowMapper = (rs, rowNum) -> {
         Film film = new Film();
@@ -54,7 +51,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film add(Film film) {
-        validateFilmInTheFuture(film);
+        validationUtils.validateFilmInTheFuture(film);
         String sql = "INSERT INTO films (name, description, release_date, duration, mpaa_rating_id) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -99,7 +96,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        validateFilm(film.getId());
+        validationUtils.validateFilm(film.getId());
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpaa_rating_id = ? WHERE id = ?";
         Integer mpaaRatingId = resolveMpaaRatingId(film);
 
@@ -137,7 +134,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteById(int id) {
-        validateFilm(id);
+        validationUtils.validateFilm(id);
         String sql = "DELETE FROM films WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         if (rowsAffected == 0) {
@@ -147,7 +144,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film findById(int id) {
-        validateFilm(id);
+        validationUtils.validateFilm(id);
 
         String sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpaa_rating_id, " +
                 "mr.code AS mpaa_code FROM films f " +
@@ -530,22 +527,6 @@ public class FilmDbStorage implements FilmStorage {
 
         films.sort((f1, f2) -> f2.getLikes().size() - f1.getLikes().size());
         return films;
-    }
-
-    public void validateFilm(Integer id) {
-        String sql = "SELECT COUNT(*) FROM films WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        if (count == null || count == 0) {
-            throw new NotFoundException("Фильм с ID " + id + " не найден");
-        }
-    }
-
-    private void validateFilmInTheFuture(Film film) {
-        final LocalDate MIN_RELEASE_DATE =
-                LocalDate.of(1895, 12, 28);
-        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
-            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
     }
 
     @Override

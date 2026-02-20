@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.recommendation.RecommendationDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
+import ru.yandex.practicum.filmorate.validation.ValidationUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class UserService {
 
     private final UserDbStorage userStorage;
     private final EventService eventService;
+    private final ValidationUtils validationUtils;
 
     private final FilmStorage filmStorage;
     private final RecommendationDbStorage recommendationDbStorage;
@@ -74,8 +76,8 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(int userId, int otherUserId) {
-        userStorage.validateUser(userId);
-        userStorage.validateUser(otherUserId);
+        validationUtils.validateUser(userId);
+        validationUtils.validateUser(otherUserId);
         Set<Integer> userFriendIds = userStorage.findById(userId).getFriendLinks().stream()
                 .map(FriendLink::getFriendId)
                 .collect(Collectors.toSet());

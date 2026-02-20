@@ -41,16 +41,9 @@ public class ReviewService {
 
     public Review updateReview(Review review) {
         log.info("Обновление отзыва с ID: {}", review.getReviewId());
-
         Review existingReview = reviewStorage.findById(review.getReviewId());
-
-        // Проверка, что пользователь может редактировать только свой отзыв
-        if (!existingReview.getUserId().equals(review.getUserId())) {
-            throw new IllegalArgumentException("Пользователь может редактировать только свои отзывы");
-        }
-
-        eventService.createReviewEvent(review.getUserId(), review.getReviewId(), Operation.UPDATE);
-
+        existingReview.setContent(review.getContent());
+        existingReview.setIsPositive(review.getIsPositive());
         return reviewStorage.update(review);
     }
 

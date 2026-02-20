@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.mpaa;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -8,13 +9,10 @@ import ru.yandex.practicum.filmorate.model.dto.MpaaDto;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class MpaaDbStorage implements MpaaStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public MpaaDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public List<MpaaDto> findAll() {

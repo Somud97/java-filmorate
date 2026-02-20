@@ -17,7 +17,6 @@ import java.sql.Statement;
 import java.util.List;
 
 @Component
-@Qualifier("eventDbStorage")
 @RequiredArgsConstructor
 public class EventDbStorage implements EventStorage {
 
