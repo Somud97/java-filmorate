@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.FriendLink;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
+import ru.yandex.practicum.filmorate.validation.ValidationUtils;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -22,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import({UserDbStorage.class, EventDbStorage.class})
+@Import({UserDbStorage.class, EventDbStorage.class, ValidationUtils.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserDbStorageTest {
 

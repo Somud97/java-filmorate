@@ -82,6 +82,7 @@ public class UserController {
     @GetMapping("/{id}/feed")
     public List<Event> getUserFeed(@PathVariable int id) {
         log.info("Список новостей о пользователе с ID: {}", id);
+        userStorage.findById(id);
         List<Event> events = eventService.getUserFeed(id);
         log.info("Возвращаем {} событий для пользователя {}", events.size(), id);
         return events;

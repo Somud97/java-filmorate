@@ -41,17 +41,12 @@ public class ReviewService {
 
     public Review updateReview(Review review) {
         log.info("Обновление отзыва с ID: {}", review.getReviewId());
-
         Review existingReview = reviewStorage.findById(review.getReviewId());
-
-        // Проверка, что пользователь может редактировать только свой отзыв
-        if (!existingReview.getUserId().equals(review.getUserId())) {
-            throw new IllegalArgumentException("Пользователь может редактировать только свои отзывы");
-        }
-
-        eventService.createReviewEvent(review.getUserId(), review.getReviewId(), Operation.UPDATE);
-
-        return reviewStorage.update(review);
+        existingReview.setContent(review.getContent());
+        existingReview.setIsPositive(review.getIsPositive());
+        Review updatedReview = reviewStorage.update(review);
+        eventService.createReviewEvent(existingReview.getUserId(), updatedReview.getReviewId(), Operation.UPDATE);
+        return updatedReview;
     }
 
     public void deleteReview(int reviewId) {

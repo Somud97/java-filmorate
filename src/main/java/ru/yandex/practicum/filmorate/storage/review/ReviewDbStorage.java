@@ -1,26 +1,23 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.validation.ValidationUtils;
 
 import java.sql.PreparedStatement;
 import java.util.List;
 
 @Component
-@Qualifier("reviewDbStorage")
+@RequiredArgsConstructor
 public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final ValidationUtils validationUtils;
 
     private final RowMapper<Review> reviewRowMapper = (rs, rowNum) -> {
         Review review = new Review();
@@ -35,6 +32,9 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review add(Review review) {
+        //проверок мало не бывает
+        validationUtils.validateUser(review.getUserId());
+        validationUtils.validateFilm(review.getFilmId());
         String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, 0)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -59,40 +59,36 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review update(Review review) {
+        validationUtils.validateUser(review.getUserId());
+        validationUtils.validateFilm(review.getFilmId());
+        validationUtils.validateReview(review.getReviewId());
         String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql,
+        jdbcTemplate.update(sql,
             review.getContent(),
             review.getIsPositive(),
             review.getReviewId());
-
-        if (rowsAffected == 0) {
-            throw new NotFoundException("Отзыв с ID " + review.getReviewId() + " не найден");
-        }
 
         return findById(review.getReviewId());
     }
 
     @Override
     public void delete(int id) {
+        validationUtils.validateReview(id);
         String sql = "DELETE FROM reviews WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, id);
-        if (rowsAffected == 0) {
-            throw new NotFoundException("Отзыв с ID " + id + " не найден");
-        }
+        jdbcTemplate.update(sql, id);
     }
 
     @Override
     public Review findById(int id) {
+        validationUtils.validateReview(id);
         String sql = "SELECT id, content, is_positive, user_id, film_id, useful FROM reviews WHERE id = ?";
         List<Review> reviews = jdbcTemplate.query(sql, reviewRowMapper, id);
-        if (reviews.isEmpty()) {
-            throw new NotFoundException("Отзыв с ID " + id + " не найден");
-        }
         return reviews.get(0);
     }
 
     @Override
     public List<Review> findByFilmId(Integer filmId, int count) {
+        validationUtils.validateFilm(filmId);
         String sql = "SELECT id, content, is_positive, user_id, film_id, useful " +
             "FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
         return jdbcTemplate.query(sql, reviewRowMapper, filmId, count);
