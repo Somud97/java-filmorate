@@ -9,10 +9,11 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class RecommendationDbStorage {
+public class RecommendationDbStorage implements RecommendationStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
+    @Override
     public Optional<Integer> findMostSimilarUserId(int userId) {
         String sql = """
             SELECT fl2.user_id
@@ -29,6 +30,7 @@ public class RecommendationDbStorage {
         return ids.stream().findFirst();
     }
 
+    @Override
     public List<Integer> findRecommendedFilmIds(int userId, int similarUserId) {
         String sql = """
             SELECT fl.film_id

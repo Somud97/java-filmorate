@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.recommendation.RecommendationDbStorage;
+import ru.yandex.practicum.filmorate.storage.recommendation.RecommendationStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.validation.ValidationUtils;
 
@@ -30,7 +30,7 @@ public class UserService {
     private final ValidationUtils validationUtils;
 
     private final FilmStorage filmStorage;
-    private final RecommendationDbStorage recommendationDbStorage;
+    private final RecommendationStorage recommendationStorage;
 
     public void addFriend(int userId, int friendId) {
         log.info("Добавление в друзья: пользователь {} -> {}", userId, friendId);
@@ -103,13 +103,13 @@ public class UserService {
     public List<Film> getRecommendations(int userId) {
         userStorage.findById(userId);
 
-        Optional<Integer> similarUserIdOpt = recommendationDbStorage.findMostSimilarUserId(userId);
+        Optional<Integer> similarUserIdOpt = recommendationStorage.findMostSimilarUserId(userId);
         if (similarUserIdOpt.isEmpty()) {
             return List.of();
         }
 
         int similarUserId = similarUserIdOpt.get();
-        List<Integer> filmIds = recommendationDbStorage.findRecommendedFilmIds(userId, similarUserId);
+        List<Integer> filmIds = recommendationStorage.findRecommendedFilmIds(userId, similarUserId);
 
         if (filmIds.isEmpty()) {
             return List.of();
