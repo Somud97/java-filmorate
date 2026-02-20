@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -21,7 +20,6 @@ public class ReviewService {
     private static final int DEFAULT_COUNT = 10;
 
     private final ReviewStorage reviewStorage;
-    private final ReviewDbStorage reviewDbStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final EventService eventService;
@@ -79,7 +77,7 @@ public class ReviewService {
         reviewStorage.findById(reviewId);
         userStorage.findById(userId);
 
-        reviewDbStorage.addLike(reviewId, userId);
+        reviewStorage.addLike(reviewId, userId);
     }
 
     public void addDislike(int reviewId, int userId) {
@@ -88,7 +86,7 @@ public class ReviewService {
         reviewStorage.findById(reviewId);
         userStorage.findById(userId);
 
-        reviewDbStorage.addDislike(reviewId, userId);
+        reviewStorage.addDislike(reviewId, userId);
     }
 
     public void removeLike(int reviewId, int userId) {
@@ -97,7 +95,7 @@ public class ReviewService {
         reviewStorage.findById(reviewId);
         userStorage.findById(userId);
 
-        reviewDbStorage.removeLike(reviewId, userId);
+        reviewStorage.removeLike(reviewId, userId);
     }
 
     public void removeDislike(int reviewId, int userId) {
@@ -106,6 +104,6 @@ public class ReviewService {
         reviewStorage.findById(reviewId);
         userStorage.findById(userId);
 
-        reviewDbStorage.removeDislike(reviewId, userId);
+        reviewStorage.removeDislike(reviewId, userId);
     }
 }
