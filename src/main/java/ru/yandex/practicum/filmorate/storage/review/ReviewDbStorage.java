@@ -105,13 +105,10 @@ public class ReviewDbStorage implements ReviewStorage {
         String checkSql = "SELECT COUNT(*) FROM review_likes WHERE review_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, reviewId, userId);
 
-        if (count != null && count > 0) {
-            String updateSql = "UPDATE review_likes SET is_positive = true WHERE review_id = ? AND user_id = ?";
-            jdbcTemplate.update(updateSql, reviewId, userId);
-        } else {
-            String insertSql = "INSERT INTO review_likes (review_id, user_id, is_positive) VALUES (?, ?, true)";
-            jdbcTemplate.update(insertSql, reviewId, userId);
-        }
+        String sql = (count != null && count > 0)
+                ? "UPDATE review_likes SET is_positive = true WHERE review_id = ? AND user_id = ?"
+                : "INSERT INTO review_likes (review_id, user_id, is_positive) VALUES (?, ?, true)";
+        jdbcTemplate.update(sql, reviewId, userId);
         updateUseful(reviewId);
     }
 
@@ -119,13 +116,10 @@ public class ReviewDbStorage implements ReviewStorage {
         String checkSql = "SELECT COUNT(*) FROM review_likes WHERE review_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, reviewId, userId);
 
-        if (count != null && count > 0) {
-            String updateSql = "UPDATE review_likes SET is_positive = false WHERE review_id = ? AND user_id = ?";
-            jdbcTemplate.update(updateSql, reviewId, userId);
-        } else {
-            String insertSql = "INSERT INTO review_likes (review_id, user_id, is_positive) VALUES (?, ?, false)";
-            jdbcTemplate.update(insertSql, reviewId, userId);
-        }
+        String sql = (count != null && count > 0)
+                ? "UPDATE review_likes SET is_positive = false WHERE review_id = ? AND user_id = ?"
+                : "INSERT INTO review_likes (review_id, user_id, is_positive) VALUES (?, ?, false)";
+        jdbcTemplate.update(sql, reviewId, userId);
         updateUseful(reviewId);
     }
 
