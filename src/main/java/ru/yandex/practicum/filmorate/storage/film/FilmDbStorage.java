@@ -507,11 +507,7 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> films = new ArrayList<>(uniqueFilms);
 
-        for (Film film : films) {
-            film.setGenresResponse(loadGenresDto(film.getId()));
-            film.setLikes(loadLikes(film.getId()));
-            film.setDirectors(loadDirectors(film.getId()));
-        }
+        loadGenresAndDirectorsForFilms(films);
 
         films.sort((f1, f2) -> {
             int compare = Integer.compare(
@@ -549,14 +545,7 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
 
-        for (Film film : films) {
-            film.setGenres(loadGenres(film.getId()));
-            film.setGenreIds(loadGenreIds(film.getId()));
-            film.setGenresResponse(loadGenresDto(film.getId()));
-            film.setDirectorIds(loadDirectorIds(film.getId()));
-            film.setDirectors(loadDirectors(film.getId()));
-            film.setLikes(loadLikes(film.getId()));
-        }
+        loadGenresAndDirectorsForFilms(films);
 
         return films;
     }
