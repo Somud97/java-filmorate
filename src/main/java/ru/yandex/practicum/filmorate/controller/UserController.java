@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.event.Event;
 import ru.yandex.practicum.filmorate.service.EventService;
@@ -51,7 +52,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable  int id, @PathVariable int friendId) {
+    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Получен запрос на добавление в друзья: пользователь {} -> {}", id, friendId);
         userService.addFriend(id, friendId);
     }
@@ -84,5 +85,11 @@ public class UserController {
         List<Event> events = eventService.getUserFeed(id);
         log.info("Возвращаем {} событий для пользователя {}", events.size(), id);
         return events;
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable int id) {
+        log.info("Получен запрос на рекомендации для пользователя с ID: {}", id);
+        return userService.getRecommendations(id);
     }
 }

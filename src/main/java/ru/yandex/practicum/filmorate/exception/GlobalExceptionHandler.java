@@ -16,6 +16,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ValidationException.class)
@@ -46,7 +47,6 @@ public class GlobalExceptionHandler {
         errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
 
         String message = getPriorityErrorMessage(e);
-
         errorResponse.put("message", message);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -73,7 +73,15 @@ public class GlobalExceptionHandler {
     }
 
     private String getPriorityErrorMessage(MethodArgumentNotValidException e) {
-        String[] priorityFields = {"email", "login", "name", "birthday", "name", "description", "releaseDate", "duration"};
+        String[] priorityFields = {
+                "email",
+                "login",
+                "name",
+                "birthday",
+                "description",
+                "releaseDate",
+                "duration"
+        };
 
         for (String field : priorityFields) {
             for (FieldError error : e.getBindingResult().getFieldErrors()) {
@@ -95,27 +103,27 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("Обработка IllegalArgumentException: {}", e.getMessage());
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", HttpStatus.FORBIDDEN.value()); // 403 Forbidden
+        errorResponse.put("status", HttpStatus.FORBIDDEN.value());
         errorResponse.put("message", e.getMessage());
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
+
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<Map<String, Object>> handleDuplicateKeyException(DuplicateKeyException e) {
         log.error("Обработка DuplicateKeyException: {}", e.getMessage());
 
         String message = "Нарушение уникальности данных";
-        if (e.getMessage().contains("USERS(EMAIL)")) {
+        if (e.getMessage() != null && e.getMessage().contains("USERS(EMAIL)")) {
             message = "Пользователь с таким email уже существует";
-        } else if (e.getMessage().contains("FILM_LIKES")) {
+        } else if (e.getMessage() != null && e.getMessage().contains("FILM_LIKES")) {
             message = "Лайк уже был поставлен";
         }
 
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", HttpStatus.CONFLICT.value()); // 409 Conflict
+        errorResponse.put("status", HttpStatus.CONFLICT.value());
         errorResponse.put("message", message);
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
-
 }
