@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
@@ -99,7 +100,8 @@ public class FilmService {
     public List<Film> getFilmsByDirector(int directorId, String sortBy) {
         log.info("Получение фильмов режиссёра {} с сортировкой по {}", directorId, sortBy);
 
-        directorStorage.getById(directorId);
+        directorStorage.getById(directorId)
+                .orElseThrow(() -> new NotFoundException("Режиссер с id " + directorId + " не найден"));
 
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
