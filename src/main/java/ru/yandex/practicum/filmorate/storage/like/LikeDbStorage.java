@@ -31,4 +31,11 @@ public class LikeDbStorage implements LikeStorage {
         String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("user_id"), filmId));
     }
+
+    @Override
+    public boolean isLikeExists(int filmId, int userId) {
+        String sql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, filmId, userId);
+        return count != null && count > 0;
+    }
 }

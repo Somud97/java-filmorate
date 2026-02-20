@@ -2,11 +2,9 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class Review {
     private Integer reviewId;
 
@@ -16,7 +14,10 @@ public class Review {
     @NotNull(message = "Тип отзыва должен быть указан")
     private Boolean isPositive;
 
+    @NotNull(message = "ID пользователя не может быть пустым")
     private Integer userId;
+
+    @NotNull(message = "ID фильма не может быть пустым")
     private Integer filmId;
     private Integer useful;
 }

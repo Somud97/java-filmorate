@@ -8,4 +8,6 @@ public interface LikeStorage {
     void removeLike(int filmId, int userId);
 
     Set<Integer> getLikes(int filmId);
+
+    boolean isLikeExists(int filmId, int userId);
 }

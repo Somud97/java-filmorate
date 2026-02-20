@@ -12,7 +12,6 @@ import lombok.Setter;
 import ru.yandex.practicum.filmorate.model.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.model.dto.GenreDto;
 import ru.yandex.practicum.filmorate.model.dto.MpaaDto;
-import ru.yandex.practicum.filmorate.validation.MinReleaseDate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -33,7 +32,6 @@ public class Film {
     private String description;
 
     @NotNull(message = "Дата релиза не может быть пустой")
-    @MinReleaseDate(message = "Дата релиза — не раньше 28 декабря 1895 года")
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность фильма должна быть положительным числом")

@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.event.Event;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -23,13 +22,11 @@ public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserStorage userStorage;
     private final UserService userService;
-    private final ValidationService validationService;
     private final EventService eventService;
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на создание пользователя: {}", user.getLogin());
-        validationService.validateUser(user);
         User createdUser = userStorage.add(user);
         log.info("Пользователь успешно создан с ID: {}", createdUser.getId());
         return createdUser;
@@ -38,7 +35,6 @@ public class UserController {
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя с ID: {}", user.getId());
-        validationService.validateUser(user);
         User updatedUser = userStorage.update(user);
         log.info("Пользователь с ID {} успешно обновлен", updatedUser.getId());
         return updatedUser;

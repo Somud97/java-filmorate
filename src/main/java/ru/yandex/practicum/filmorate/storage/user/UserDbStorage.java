@@ -41,26 +41,28 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User add(User user) {
+        //проверка на существующий email
+        String checkEmailSql = "SELECT COUNT(*) FROM users WHERE email = ?";
+        Integer emailCount = jdbcTemplate.queryForObject(checkEmailSql, Integer.class, user.getEmail());
+        if (emailCount != null && emailCount > 0) {
+            throw new ru.yandex.practicum.filmorate.exception.ValidationException("Пользователь с email " + user.getEmail() + " уже существует");
+        }
         String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
             ps.setString(1, user.getEmail());
             ps.setString(2, user.getLogin());
-            ps.setString(3, user.getName());
+            ps.setString(3, user.getName() == null || user.getName().isBlank() ? user.getLogin() : user.getName());
             ps.setDate(4, user.getBirthday() != null ? Date.valueOf(user.getBirthday()) : null);
             return ps;
         }, keyHolder);
-
         Integer id = keyHolder.getKey() != null ? keyHolder.getKey().intValue() : null;
         if (id == null) {
             throw new RuntimeException("Не удалось получить ID созданного пользователя");
         }
         user.setId(id);
-
         saveFriendLinks(user.getId(), user.getFriendLinks());
-
         return findById(id);
     }
 

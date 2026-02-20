@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.exception;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -89,4 +90,32 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .orElse("Ошибка валидации");
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.error("Обработка IllegalArgumentException: {}", e.getMessage());
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", HttpStatus.FORBIDDEN.value()); // 403 Forbidden
+        errorResponse.put("message", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateKeyException(DuplicateKeyException e) {
+        log.error("Обработка DuplicateKeyException: {}", e.getMessage());
+
+        String message = "Нарушение уникальности данных";
+        if (e.getMessage().contains("USERS(EMAIL)")) {
+            message = "Пользователь с таким email уже существует";
+        } else if (e.getMessage().contains("FILM_LIKES")) {
+            message = "Лайк уже был поставлен";
+        }
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", HttpStatus.CONFLICT.value()); // 409 Conflict
+        errorResponse.put("message", message);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
 }

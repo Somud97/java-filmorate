@@ -8,7 +8,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpaa.MpaaStorage;
@@ -25,12 +24,10 @@ public class FilmController {
     private final GenreStorage genreStorage;
     private final MpaaStorage mpaaStorage;
     private final FilmService filmService;
-    private final ValidationService validationService;
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Получен запрос на создание фильма: {}", film.getName());
-        validationService.validateFilm(film);
         validateMpaAndGenres(film);
         Film createdFilm = filmStorage.add(film);
         log.info("Фильм успешно создан с ID: {}", createdFilm.getId());
@@ -40,7 +37,6 @@ public class FilmController {
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Получен запрос на обновление фильма с ID: {}", film.getId());
-        validationService.validateFilm(film);
         validateMpaAndGenres(film);
         Film updatedFilm = filmStorage.update(film);
         log.info("Фильм с ID {} успешно обновлен", updatedFilm.getId());
