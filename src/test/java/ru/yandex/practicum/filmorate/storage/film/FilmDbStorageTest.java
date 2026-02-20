@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.MpaaRating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
+import ru.yandex.practicum.filmorate.validation.ValidationUtils;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import({FilmDbStorage.class, UserDbStorage.class, EventDbStorage.class})
+@Import({FilmDbStorage.class, UserDbStorage.class, EventDbStorage.class, ValidationUtils.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmDbStorageTest {
 
