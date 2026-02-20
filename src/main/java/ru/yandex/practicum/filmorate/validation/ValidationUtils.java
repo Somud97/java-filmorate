@@ -62,16 +62,6 @@ public class ValidationUtils {
             throw new NotFoundException("Отзыв с ID " + id + " не найден");
         }
     }
-    /*public Review validateReview(Integer reviewId) {
-        String sql = "SELECT * FROM reviews WHERE id = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> mapRowToReview(rs), reviewId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Отзыв с ID " + reviewId + " не найден");
-        }
-    }*/
-    //если бы существовала отдельная сущность rowMapper для отзывов, код можно было бы сделать меньше,
-    // не создавая доп связи с reviewDbStorage
 
     //проверка прав пользователя на редактирование/удаление отзыва
     public void validateReviewOwnership(Integer reviewId, Integer userId) {
