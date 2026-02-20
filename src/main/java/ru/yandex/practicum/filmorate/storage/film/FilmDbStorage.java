@@ -8,7 +8,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaaRating;
@@ -365,12 +364,30 @@ public class FilmDbStorage implements FilmStorage {
 
         String genresSql = "SELECT fg.film_id, g.id, g.name FROM film_genre fg " +
                 "JOIN genres g ON fg.genre_id = g.id " +
-                "WHERE fg.film_id IN (" + placeholders + ")";
+                "WHERE fg.film_id IN (" + placeholders + ") ORDER BY g.id";
+
+        for (Film film : films) {
+            if (film.getGenreIds() == null) {
+                film.setGenreIds(new ArrayList<>());
+            }
+            if (film.getGenresResponse() == null) {
+                film.setGenresResponse(new ArrayList<>());
+            }
+            if (film.getGenres() == null) {
+                film.setGenres(new HashSet<>());
+            }
+        }
 
         jdbcTemplate.query(genresSql, filmIds.toArray(), rs -> {
             Film film = filmMap.get(rs.getInt("film_id"));
             if (film != null) {
+                int genreId = rs.getInt("id");
                 String genreName = rs.getString("name");
+
+                film.getGenreIds().add(genreId);
+
+                film.getGenresResponse().add(new GenreDto(genreId, genreName));
+
                 for (Genre genre : Genre.values()) {
                     if (genre.getName().equals(genreName)) {
                         film.getGenres().add(genre);
@@ -382,15 +399,41 @@ public class FilmDbStorage implements FilmStorage {
 
         String directorsSql = "SELECT fd.film_id, d.id, d.name FROM film_director fd " +
                 "JOIN directors d ON fd.director_id = d.id " +
-                "WHERE fd.film_id IN (" + placeholders + ")";
+                "WHERE fd.film_id IN (" + placeholders + ") ORDER BY d.id";
+
+        for (Film film : films) {
+            if (film.getDirectorIds() == null) {
+                film.setDirectorIds(new HashSet<>());
+            }
+            if (film.getDirectors() == null) {
+                film.setDirectors(new ArrayList<>());
+            }
+        }
 
         jdbcTemplate.query(directorsSql, filmIds.toArray(), rs -> {
             Film film = filmMap.get(rs.getInt("film_id"));
             if (film != null) {
-                Director director = new Director();
-                director.setId(rs.getInt("id"));
-                director.setName(rs.getString("name"));
-                film.getDirectors().add(director);
+                int directorId = rs.getInt("id");
+                String directorName = rs.getString("name");
+
+                film.getDirectorIds().add(directorId);
+
+                film.getDirectors().add(new DirectorDto(directorId, directorName));
+            }
+        });
+
+        String likesSql = "SELECT film_id, user_id FROM film_likes WHERE film_id IN (" + placeholders + ")";
+
+        for (Film film : films) {
+            if (film.getLikes() == null) {
+                film.setLikes(new HashSet<>());
+            }
+        }
+
+        jdbcTemplate.query(likesSql, filmIds.toArray(), rs -> {
+            Film film = filmMap.get(rs.getInt("film_id"));
+            if (film != null) {
+                film.getLikes().add(rs.getInt("user_id"));
             }
         });
     }
