@@ -44,7 +44,9 @@ public class ReviewService {
         Review existingReview = reviewStorage.findById(review.getReviewId());
         existingReview.setContent(review.getContent());
         existingReview.setIsPositive(review.getIsPositive());
-        return reviewStorage.update(review);
+        Review updatedReview = reviewStorage.update(review);
+        eventService.createReviewEvent(existingReview.getUserId(), updatedReview.getReviewId(), Operation.UPDATE);
+        return updatedReview;
     }
 
     public void deleteReview(int reviewId) {

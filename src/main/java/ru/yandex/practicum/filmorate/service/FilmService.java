@@ -37,6 +37,7 @@ public class FilmService {
 
         if (likeStorage.isLikeExists(filmId, userId)) {
             log.info("Лайк уже существует: фильм {}, пользователь {}", filmId, userId);
+            eventService.createLikeEvent(userId, filmId, Operation.ADD);
             return;
         }
 
@@ -53,8 +54,8 @@ public class FilmService {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
 
-        if (likeStorage.isLikeExists(filmId, userId)) {
-            log.info("Лайк уже существует: фильм {}, пользователь {}", filmId, userId);
+        if (!likeStorage.isLikeExists(filmId, userId)) {
+            log.info("Лайк не найден: фильм {}, пользователь {}", filmId, userId);
             return;
         }
 
