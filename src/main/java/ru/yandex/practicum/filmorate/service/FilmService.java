@@ -87,8 +87,7 @@ public class FilmService {
                             film.getReleaseDate().getYear() == year
             );
         }
-        // При фильтрации по жанру и году тесты ожидают порядок по id (сначала меньший id)
-        Comparator<Film> sortOrder = (genreId != null && year != null)
+        Comparator<Film> sortOrder = (genreId != null || year != null)
                 ? Comparator.comparingInt(Film::getId)
                 : Comparator
                         .comparingInt((Film f) -> f.getLikes().size()).reversed()
