@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.FriendLink;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
+import ru.yandex.practicum.filmorate.validation.ValidationUtils;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -21,11 +23,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import(UserDbStorage.class)
+@Import({UserDbStorage.class, EventDbStorage.class, ValidationUtils.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserDbStorageTest {
 
     private final UserDbStorage userStorage;
+
 
     @Test
     void add_shouldCreateUserAndReturnWithId() {
@@ -94,7 +97,7 @@ class UserDbStorageTest {
         User user = userStorage.add(createUser("del@mail.ru", "del", "Del", LocalDate.of(1995, 1, 1)));
         int id = user.getId();
 
-        userStorage.delete(id);
+        userStorage.deleteById(id);
 
         assertThatThrownBy(() -> userStorage.findById(id))
                 .isInstanceOf(NotFoundException.class)
@@ -103,7 +106,7 @@ class UserDbStorageTest {
 
     @Test
     void delete_shouldThrowWhenUserNotFound() {
-        assertThatThrownBy(() -> userStorage.delete(99999))
+        assertThatThrownBy(() -> userStorage.deleteById(99999))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("99999");
     }

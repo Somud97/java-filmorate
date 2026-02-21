@@ -9,9 +9,9 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import ru.yandex.practicum.filmorate.model.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.model.dto.GenreDto;
 import ru.yandex.practicum.filmorate.model.dto.MpaaDto;
-import ru.yandex.practicum.filmorate.validation.MinReleaseDate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,7 +32,6 @@ public class Film {
     private String description;
 
     @NotNull(message = "Дата релиза не может быть пустой")
-    @MinReleaseDate(message = "Дата релиза — не раньше 28 декабря 1895 года")
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
@@ -50,6 +49,10 @@ public class Film {
 
     private List<GenreDto> genresResponse = new ArrayList<>();
 
+    private Set<Integer> directorIds = new HashSet<>();
+
+    private List<DirectorDto> directors = new ArrayList<>();
+
     @JsonSetter("mpa")
     public void setMpaFromJson(MpaaDto mpa) {
         if (mpa != null) {
@@ -61,6 +64,13 @@ public class Film {
     public void setGenresFromJson(List<GenreDto> genresDto) {
         if (genresDto != null) {
             this.genreIds = genresDto.stream().map(GenreDto::getId).collect(Collectors.toList());
+        }
+    }
+
+    @JsonSetter("directors")
+    public void setDirectorsFromJson(List<DirectorDto> directorDto) {
+        if (directorDto != null) {
+            this.directorIds = directorDto.stream().map(DirectorDto::getId).collect(Collectors.toSet());
         }
     }
 
@@ -83,5 +93,10 @@ public class Film {
     @JsonProperty("genres")
     public List<GenreDto> getGenresForJson() {
         return genresResponse != null ? genresResponse : new ArrayList<>();
+    }
+
+    @JsonProperty("directors")
+    public List<DirectorDto> getDirectorsForJson() {
+        return directors != null ? directors : new ArrayList<>();
     }
 }

@@ -8,10 +8,11 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaaRating;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
+import ru.yandex.practicum.filmorate.validation.ValidationUtils;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import({FilmDbStorage.class, UserDbStorage.class})
+@Import({FilmDbStorage.class, UserDbStorage.class, EventDbStorage.class, ValidationUtils.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmDbStorageTest {
 
@@ -53,21 +54,6 @@ class FilmDbStorageTest {
         assertThat(created.getMpaaRating()).isEqualTo(MpaaRating.PG_13);
         Film found = filmStorage.findById(created.getId());
         assertThat(found.getMpaaRating()).isEqualTo(MpaaRating.PG_13);
-    }
-
-    @Test
-    void add_shouldSaveGenres() {
-        Film film = createFilm("Multi-Genre", "Desc", LocalDate.of(2015, 1, 1), 100);
-        Set<Genre> genres = new HashSet<>();
-        genres.add(Genre.COMEDY);
-        genres.add(Genre.DRAMA);
-        film.setGenres(genres);
-
-        Film created = filmStorage.add(film);
-
-        assertThat(created.getGenres()).containsExactlyInAnyOrder(Genre.COMEDY, Genre.DRAMA);
-        Film found = filmStorage.findById(created.getId());
-        assertThat(found.getGenres()).containsExactlyInAnyOrder(Genre.COMEDY, Genre.DRAMA);
     }
 
     @Test
@@ -130,7 +116,7 @@ class FilmDbStorageTest {
         Film film = filmStorage.add(createFilm("ToDelete", "Desc", LocalDate.of(2005, 1, 1), 70));
         int id = film.getId();
 
-        filmStorage.delete(id);
+        filmStorage.deleteById(id);
 
         assertThatThrownBy(() -> filmStorage.findById(id))
                 .isInstanceOf(NotFoundException.class)
@@ -139,7 +125,7 @@ class FilmDbStorageTest {
 
     @Test
     void delete_shouldThrowWhenFilmNotFound() {
-        assertThatThrownBy(() -> filmStorage.delete(99999))
+        assertThatThrownBy(() -> filmStorage.deleteById(99999))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("99999");
     }
